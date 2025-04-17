@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  get: ^4.7.2
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -57,6 +58,24 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: Mulish
+      fonts:
+        - asset: assets/font/mulish.ttf
+
+    - family: Roboto
+      fonts:
+        - asset: assets/font/roboto.ttf
+
+    - family: UTMCopperplate
+      fonts:
+        - asset: assets/font/utm_copperplate.ttf
+
+    - family: UTMYenTu
+      fonts:
+        - asset: assets/font/utm_yen_tu.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
