@@ -5,7 +5,7 @@ import '../models/home_data.dart';
 class HomeApiService {
   static Future<HomeData> fetchHomeData() async {
     final response = await http.get(Uri.parse(
-        'https://run.mocky.io/v3/ff568805-5f13-4422-9bec-da45afa8726d'));
+        'https://run.mocky.io/v3/40327d98-ee17-4d7d-8bd1-b383c84f8a4b'));
 
     if (response.statusCode == 200) {
       return HomeData.fromJson(json.decode(response.body));

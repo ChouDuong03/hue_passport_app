@@ -5,7 +5,7 @@ import '../models/visitor_data.dart';
 class VisitorApiService {
   static Future<List<Visitor>> fetchVisitors() async {
     final url = Uri.parse(
-        'https://run.mocky.io/v3/797139e1-f8ab-4b6f-b402-5697db35240a'); // thay bằng link mocky thật
+        'https://run.mocky.io/v3/92817796-ea2e-49d4-91f0-c7c89be71556'); // thay bằng link mocky thật
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

@@ -18,6 +18,7 @@ class HomeScreen extends StatelessWidget {
         }
 
         // Sử dụng NumberFormat để định dạng số
+        final enFormat = NumberFormat.compact(locale: 'en');
         final numberFormat = NumberFormat('#,###'); // Định dạng với dấu phẩy
         final formattedNumber = numberFormat.format(data.completePrograms);
         return SingleChildScrollView(
@@ -36,7 +37,7 @@ class HomeScreen extends StatelessWidget {
               // Nội dung chính
               Column(
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
@@ -74,7 +75,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 10),
 
                   // Card chương trình
                   Padding(
@@ -150,11 +151,14 @@ class HomeScreen extends StatelessWidget {
                                               TextSpan(
                                                 text: '${data.totalPlaces} ',
                                                 style: const TextStyle(
+                                                    fontFamily: 'Mulish',
+                                                    fontWeight: FontWeight.bold,
                                                     color: Colors.red),
                                               ),
                                               const TextSpan(
                                                 text: 'Địa điểm',
                                                 style: TextStyle(
+                                                    fontFamily: 'Mulish',
                                                     color: Color(0xFF008FFF)),
                                               ),
                                             ],
@@ -176,13 +180,16 @@ class HomeScreen extends StatelessWidget {
                                             children: [
                                               TextSpan(
                                                 text:
-                                                    '${data.totalParticipants}k ',
+                                                    '${enFormat.format(data.totalParticipants)} ',
                                                 style: const TextStyle(
+                                                    fontFamily: 'Mulish',
+                                                    fontWeight: FontWeight.bold,
                                                     color: Colors.green),
                                               ),
                                               const TextSpan(
                                                 text: 'Tham gia',
                                                 style: TextStyle(
+                                                    fontFamily: 'Mulish',
                                                     color: Color(0xFF008FFF)),
                                               ),
                                             ],
@@ -384,8 +391,42 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // Hình tròn xanh nằm sau
+                          Positioned(
+                            left: 0,
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFB3E5FC),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                          // Dòng chữ đè lên, được đẩy nhẹ sang phải để lộ hình tròn
+                          const Padding(
+                            padding: EdgeInsets.only(left: 11),
+                            child: Text(
+                              'Du khách check in gần đây',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF234874),
+                                fontFamily: 'Mulish',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                   VisitorListView(), // <-- Thêm dòng này
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 80),
                 ],
               ),
             ],
