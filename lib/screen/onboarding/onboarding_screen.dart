@@ -172,16 +172,24 @@ class OnboardingScreen extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: controller.nextPage,
-                        child: Text(
-                          controller.currentIndex.value == 3
-                              ? "Hoàn thành"
-                              : "Tiếp tục",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontFamily: 'Mulish',
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF008FFF),
+                        onTap: () {
+                          if (controller.currentIndex.value == 3) {
+                            Get.toNamed('/main');
+                          } else {
+                            controller.nextPage();
+                          }
+                        },
+                        child: Obx(
+                          () => Text(
+                            controller.currentIndex.value == 3
+                                ? "Hoàn thành"
+                                : "Tiếp tục",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'Mulish',
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF008FFF),
+                            ),
                           ),
                         ),
                       ),

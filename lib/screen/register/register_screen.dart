@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hue_passport_app/widgets/register_success_diaglog.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -124,7 +125,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           // Nút Đăng ký
                           GestureDetector(
                             onTap: () {
-                              // Xử lý đăng ký
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (_) => RegisterSuccessDialog(
+                                  onClose: () {
+                                    Navigator.pop(context);
+                                    // Optional: điều hướng sang trang khác
+                                    // Get.toNamed('/home');
+                                  },
+                                ),
+                              );
                             },
                             child: Container(
                               width: double.infinity,

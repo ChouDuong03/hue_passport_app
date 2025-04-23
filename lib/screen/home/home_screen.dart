@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/home_controller.dart';
 import 'package:hue_passport_app/widgets/visitor_list_view.dart';
 import 'package:intl/intl.dart';
+import 'package:hue_passport_app/widgets/custom_alert.dart';
 
 class HomeScreen extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
@@ -27,7 +28,7 @@ class HomeScreen extends StatelessWidget {
               // Background image
               SizedBox(
                 width: double.infinity,
-                height: 250,
+                height: MediaQuery.of(context).size.height * 0.25,
                 child: Image.asset(
                   'assets/images/border2.png',
                   fit: BoxFit.cover,
@@ -256,19 +257,33 @@ class HomeScreen extends StatelessWidget {
                                 )
                               ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFA793F),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Chi tiết',
-                                style: TextStyle(
-                                  fontFamily: 'Mulish',
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                            InkWell(
+                              onTap: () {
+                                CustomAlert.show(
+                                  message:
+                                      "Bạn cần đăng nhập để xem chi tiết chương trình.",
+                                  confirmText: "Đăng nhập",
+                                  cancelText: "Đóng",
+                                  onConfirm: () {
+                                    // Ví dụ: chuyển sang màn hình đăng nhập
+                                    Get.toNamed('/login');
+                                  },
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFA793F),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'Chi tiết',
+                                  style: TextStyle(
+                                    fontFamily: 'Mulish',
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),

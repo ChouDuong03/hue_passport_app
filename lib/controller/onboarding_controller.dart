@@ -17,8 +17,7 @@ class OnboardingController extends GetxController {
   }
 
   void skip() {
-    // TODO: bỏ qua onboarding
-    // Get.offAllNamed('/home');
+    Get.offAllNamed('/login');
   }
 
   void onPageChanged(int index) {

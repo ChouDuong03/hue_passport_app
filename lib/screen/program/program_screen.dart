@@ -43,7 +43,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
                   // Background
                   SizedBox(
                     width: double.infinity,
-                    height: 250,
+                    height: MediaQuery.of(context).size.height * 0.25,
                     child: Image.asset(
                       'assets/images/border2.png',
                       fit: BoxFit.cover,
@@ -67,7 +67,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Mulish',
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 18,
                               ),
                             ),
                             Align(
