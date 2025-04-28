@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 
 class RegisterSuccessDialog extends StatelessWidget {
   final VoidCallback onClose;
+  final String email; // thêm dòng này
 
-  const RegisterSuccessDialog({super.key, required this.onClose});
+  const RegisterSuccessDialog({
+    super.key,
+    required this.onClose,
+    required this.email, // thêm dòng này
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +23,6 @@ class RegisterSuccessDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Icon xác nhận thành công
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
@@ -32,7 +36,6 @@ class RegisterSuccessDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Nội dung văn bản
                 RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
@@ -45,14 +48,14 @@ class RegisterSuccessDialog extends StatelessWidget {
                     ),
                     children: [
                       TextSpan(
-                        text: 'Abc@gmail.com',
+                        text: email, // dùng email truyền vào
                         style: const TextStyle(
                           color: Color(0xFF0094FF),
                           fontWeight: FontWeight.bold,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // Mở email app hoặc thao tác khác
+                            // có thể mở app email tại đây nếu muốn
                           },
                       ),
                       const TextSpan(
@@ -64,7 +67,6 @@ class RegisterSuccessDialog extends StatelessWidget {
               ],
             ),
           ),
-          // Nút X góc phải
           Positioned(
             top: 8,
             right: 8,

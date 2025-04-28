@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/nav_controller.dart';
-import 'package:hue_passport_app/screen/home/home_screen.dart';
+import 'package:hue_passport_app/ChuongTrinhAmThuc/ChuongTrinhAmThuc_Screen.dart';
 import 'package:hue_passport_app/screen/program/program_screen.dart';
 import 'package:hue_passport_app/screen/person/person_screen.dart';
 import 'package:hue_passport_app/screen/setting/setting_screen.dart';
@@ -10,8 +10,8 @@ class MainScreen extends StatelessWidget {
   final NavController navController = Get.put(NavController());
 
   final List<Widget> screens = [
-    HomeScreen(),
     ProgramScreen(),
+    FoodProgramScreen(),
     PersonScreen(),
     SettingScreen(),
   ];
@@ -49,24 +49,25 @@ class MainScreen extends StatelessWidget {
               currentIndex: navController.selectedIndex.value,
               onTap: navController.changeTabIndex,
               items: [
-                const BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.home,
-                    size: 24,
+                BottomNavigationBarItem(
+                  icon: Image.asset(
+                    navController.selectedIndex.value == 1
+                        ? 'assets/images/iconplace.png'
+                        : 'assets/images/iconplace2.png',
+                    width: 24,
+                    height: 24,
                   ),
-                  label: 'Trang chủ',
+                  label: 'Chương trình',
                 ),
                 BottomNavigationBarItem(
                   icon: Image.asset(
-                    'assets/images/iconplace.png',
+                    navController.selectedIndex.value == 1
+                        ? 'assets/images/foodicon.png'
+                        : 'assets/images/foodicon2.png',
                     width: 24,
                     height: 24,
-                    color: navController.selectedIndex.value == 1
-                        ? Color(0xFF04CF3D)
-                        : Color(0xFFA5B7CD),
-                    colorBlendMode: BlendMode.srcIn,
                   ),
-                  label: 'Chương trình',
+                  label: 'Ẩm thực',
                 ),
                 const BottomNavigationBarItem(
                   icon: Icon(

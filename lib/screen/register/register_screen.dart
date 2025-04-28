@@ -1,150 +1,201 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hue_passport_app/widgets/register_success_diaglog.dart';
+import 'package:hue_passport_app/screen/quoctich/quoctich_model.dart';
+import 'package:hue_passport_app/screen/register/register_controller.dart';
+import 'package:hue_passport_app/screen/tinhthanh/province_model.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  final RegisterController controller = Get.put(RegisterController());
 
-  @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
-}
+  RegisterScreen({super.key});
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController dobController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  String gender = 'Nam'; // Default gender
-  String nationality = 'Viet Nam'; // Default nationality
+  InputDecoration inputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      filled: true,
+      fillColor: const Color(0xFFF3F6FA),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEAF2FF),
       body: Stack(
         children: [
-          // 📸 Background là hình ảnh
-          SizedBox.expand(
+          // Background
+          Positioned.fill(
             child: Image.asset(
-              'assets/images/imgbg1.png', // Đảm bảo thêm ảnh trong pubspec.yaml
+              'assets/images/imgbg1.png',
               fit: BoxFit.cover,
             ),
           ),
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ← Back Button và "Tạo tài khoản" căn giữa
+                    // Back & Title
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        // Arrow back button
-                        GestureDetector(
-                          onTap: () => Get.back(),
-                          child: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Get.back(),
                         ),
-                        const SizedBox(
-                            width: 20), // Khoảng cách giữa icon và title
-                        // Tạo tài khoản căn giữa
                         const Expanded(
                           child: Text(
                             "Tạo tài khoản",
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
+                              fontSize: 20,
                               fontFamily: 'Mulish',
                               fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
                           ),
                         ),
+                        const SizedBox(width: 48), // chừa chỗ icon back
                       ],
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
 
-                    // Khung trắng chứa nội dung
+                    // Card
                     Container(
-                      margin: const EdgeInsets.symmetric(vertical: 30),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             blurRadius: 8,
-                            offset: Offset(0, 3),
-                          )
+                            offset: Offset(0, 2),
+                          ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Giới tính
-
-                          const SizedBox(height: 20),
+                          // Giới tính - Radio
+                          Obx(() => Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "Giới tính: ",
+                                    style: TextStyle(
+                                      fontFamily: 'Mulish',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Radio<String>(
+                                        value: 'Nam',
+                                        groupValue: controller.gender.value,
+                                        onChanged: (value) =>
+                                            controller.gender.value = value!,
+                                      ),
+                                      const Text('Nam'),
+                                      Radio<String>(
+                                        value: 'Nữ',
+                                        groupValue: controller.gender.value,
+                                        onChanged: (value) =>
+                                            controller.gender.value = value!,
+                                      ),
+                                      const Text('Nữ'),
+                                      Radio<String>(
+                                        value: 'Khác',
+                                        groupValue: controller.gender.value,
+                                        onChanged: (value) =>
+                                            controller.gender.value = value!,
+                                      ),
+                                      const Text('Khác'),
+                                    ],
+                                  )
+                                ],
+                              )),
+                          const SizedBox(height: 16),
 
                           // Họ và tên
-
                           TextField(
-                            controller: nameController,
-                            decoration: InputDecoration(
-                              hintText: "Họ và tên",
-                              prefixIcon: const Icon(Icons.person),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF3F6FA),
-                            ),
+                            controller: controller.nameController,
+                            decoration:
+                                inputDecoration("Họ và tên", Icons.person),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
+
+                          // Ngày sinh
+                          TextField(
+                            controller: controller.dobController,
+                            decoration: inputDecoration(
+                                "Ngày sinh", Icons.calendar_today),
+                            keyboardType: TextInputType.datetime,
+                          ),
+                          const SizedBox(height: 16),
 
                           // Email
-
                           TextField(
-                            controller: emailController,
-                            decoration: InputDecoration(
-                              hintText: "Email",
-                              prefixIcon: const Icon(Icons.email),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF3F6FA),
-                            ),
+                            controller: controller.emailController,
+                            decoration: inputDecoration("Email", Icons.email),
+                            keyboardType: TextInputType.emailAddress,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           // Quốc tịch
+                          Obx(() => DropdownButtonFormField<Nationality>(
+                                value: controller.selectedNationality.value,
+                                items: controller.nationalities.map((n) {
+                                  return DropdownMenuItem<Nationality>(
+                                    value: n,
+                                    child: Text(n.tenQuocTich),
+                                  );
+                                }).toList(),
+                                onChanged: controller.onSelectNationality,
+                                decoration:
+                                    inputDecoration("Quốc tịch", Icons.public),
+                              )),
+                          const SizedBox(height: 16),
 
-                          // Nút Đăng ký
+                          // Tỉnh thành
+                          Obx(() => controller.showProvinceField.value
+                              ? DropdownButtonFormField<Province>(
+                                  value: controller.selectedProvince.value,
+                                  items: controller.provinces.map((p) {
+                                    return DropdownMenuItem<Province>(
+                                      value: p,
+                                      child: Text(p.name),
+                                    );
+                                  }).toList(),
+                                  onChanged: (p) =>
+                                      controller.selectedProvince.value = p,
+                                  decoration: inputDecoration(
+                                      "Chọn tỉnh thành", Icons.location_city),
+                                )
+                              : const SizedBox()),
+
+                          const SizedBox(height: 30),
+
+                          // Button Đăng ký
                           GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (_) => RegisterSuccessDialog(
-                                  onClose: () {
-                                    Navigator.pop(context);
-                                    // Optional: điều hướng sang trang khác
-                                    // Get.toNamed('/home');
-                                  },
-                                ),
-                              );
-                            },
+                            onTap: controller.register,
                             child: Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFFFA793F),
-                                    Color(0xFFFFA345)
+                                    Color(0xFFFF8040),
+                                    Color(0xFFFFA347)
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(30),
@@ -155,16 +206,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   style: TextStyle(
                                     fontFamily: 'Mulish',
                                     color: Colors.white,
-                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                   ),
                                 ),
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 20),
 
-                          // Đã có tài khoản
+                          // Đăng nhập
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -176,24 +228,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () {
-                                  Get.toNamed('/login');
-                                },
+                                onTap: () => Get.toNamed('/login'),
                                 child: const Text(
                                   "ĐĂNG NHẬP",
                                   style: TextStyle(
-                                    fontSize: 14,
                                     fontFamily: 'Mulish',
-                                    fontWeight: FontWeight.bold,
                                     color: Color(0xFF008FFF),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),
                             ],
-                          ),
+                          )
                         ],
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),

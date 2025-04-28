@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hue_passport_app/screen/login/login_api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,21 +13,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passportController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false; // thêm loading
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // 📸 Background là hình ảnh
           SizedBox.expand(
             child: Image.asset(
               'assets/images/imgbg1.png',
               fit: BoxFit.cover,
             ),
           ),
-
-          // 📦 Nội dung chính
           SafeArea(
             child: Column(
               children: [
@@ -41,17 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Giảm kích thước khung trắng
                 Expanded(
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: SizedBox(
-                      height: MediaQuery.of(context).size.height *
-                          0.5, // Thu nhỏ chiều cao
+                      height: MediaQuery.of(context).size.height * 0.5,
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 40),
-                        padding: const EdgeInsets.all(16), // Giảm padding
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
@@ -72,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 20),
 
-                              // Mã hộ chiếu
+                              // Passport
                               TextField(
                                 controller: passportController,
                                 decoration: InputDecoration(
@@ -87,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 16),
 
-                              // Mật khẩu
+                              // Password
                               TextField(
                                 controller: passwordController,
                                 obscureText: _obscurePassword,
@@ -113,13 +109,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 12),
 
-                              // Quên mật khẩu
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: GestureDetector(
-                                  onTap: () {
-                                    // TODO: Điều hướng quên mật khẩu
-                                  },
+                                  onTap: () {},
                                   child: const Text(
                                     "Quên mật khẩu?",
                                     style: TextStyle(
@@ -133,11 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 20),
 
-                              // Nút đăng nhập
                               GestureDetector(
-                                onTap: () {
-                                  // TODO: Xử lý đăng nhập
-                                },
+                                onTap: _handleLogin,
                                 child: Container(
                                   width: double.infinity,
                                   padding:
@@ -166,7 +156,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 20),
 
-                              // Chưa có tài khoản?
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -203,8 +192,44 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
+
+          // Loading overlay
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.orange),
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await LoginApiService().login(
+        passportNumber: passportController.text,
+        password: passwordController.text,
+      );
+      _showMessage('Đăng nhập thành công!');
+      // TODO: Navigate đến home screen nếu cần
+    } catch (e) {
+      _showMessage('Lỗi: ${e.toString().replaceAll('Exception: ', '')}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }
