@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
+import 'package:hue_passport_app/models/dish_model.dart';
 
 class ProgramFoodApiService {
   static const baseUrl = 'https://localhost:51394/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://localhost:51394/api/MonAns';
 
   // Hàm xử lý chung cho việc kiểm tra thành công của API
   static Future<Map<String, dynamic>> _handleResponse(
@@ -36,5 +38,15 @@ class ProgramFoodApiService {
         await http.get(Uri.parse('$baseUrl/GetChiTietChuongTrinh/$id'));
     final data = await _handleResponse(response);
     return ProgramFoodDetailModel.fromJson(data['resultObj']);
+  }
+
+  // Lấy danh sách món ăn theo chương trình
+  static Future<List<DishModel>> fetchDishesByProgram(int chuongTrinhID) async {
+    final response = await http.get(
+      Uri.parse('$dishBaseUrl/GetDanhSachMonAnByChuongTrinh/$chuongTrinhID'),
+    );
+    final data = await _handleResponse(response);
+    List list = data['resultObj'];
+    return list.map((e) => DishModel.fromJson(e)).toList();
   }
 }

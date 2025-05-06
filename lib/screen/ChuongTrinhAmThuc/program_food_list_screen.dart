@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
@@ -121,20 +122,25 @@ class ProgramListScreen extends StatelessWidget {
                         }
 
                         return SizedBox(
-                          height:
-                              500, // Chiều cao tối thiểu để chứa ProgramCardWidget
+                          height: 500,
                           child: PageView.builder(
                             controller: _pageController,
                             itemCount: controller.programs.length,
                             itemBuilder: (context, index) {
                               final program = controller.programs[index];
-                              return ProgramCardWidget(program: program);
+                              return ProgramCardWidget(
+                                program: program,
+                                currentPage:
+                                    index, // Truyền vị trí trang hiện tại
+                                totalPages: controller
+                                    .programs.length, // Truyền tổng số trang
+                              );
                             },
                           ),
                         );
                       }),
 
-                      // Phần "Top người dùng check-in được đặt ở đây"
+                      // Phần "Top người dùng check-in được đặt ở đây" (hàng dọc)
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
@@ -144,39 +150,41 @@ class ProgramListScreen extends StatelessWidget {
                             const Text(
                               'Top người dùng check-in được đặt ở đây',
                               style: TextStyle(
+                                fontFamily: 'Mulish',
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 8),
-                            SizedBox(
-                              height: 80,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: topCheckInUsers.length,
-                                itemBuilder: (context, index) {
-                                  final user = topCheckInUsers[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 12),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          '${user['rank']}.',
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                            ListView.builder(
+                              shrinkWrap:
+                                  true, // Để ListView không chiếm toàn bộ không gian
+                              physics:
+                                  const NeverScrollableScrollPhysics(), // Tắt cuộn trong ListView
+                              itemCount: topCheckInUsers.length,
+                              itemBuilder: (context, index) {
+                                final user = topCheckInUsers[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${user['rank']}.',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        const SizedBox(width: 8),
-                                        CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage:
-                                              AssetImage(user['avatar']),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const CircleAvatar(
+                                        radius: 12,
+                                        backgroundColor:
+                                            Colors.grey, // Màu placeholder
+                                        // backgroundImage: AssetImage(user['avatar']),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
@@ -196,11 +204,11 @@ class ProgramListScreen extends StatelessWidget {
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -216,6 +224,7 @@ class ProgramListScreen extends StatelessWidget {
                             const Text(
                               'Huế Food Tour: Trải nghiệm Ẩm thực Huế 1 ngày',
                               style: TextStyle(
+                                fontFamily: 'Mulish',
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
@@ -237,6 +246,7 @@ class ProgramListScreen extends StatelessWidget {
                                       Text(
                                         '${tour['rank']}.',
                                         style: const TextStyle(
+                                          fontFamily: 'Mulish',
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -250,6 +260,7 @@ class ProgramListScreen extends StatelessWidget {
                                             Text(
                                               tour['name'],
                                               style: const TextStyle(
+                                                fontFamily: 'Mulish',
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14,
                                               ),
@@ -257,6 +268,7 @@ class ProgramListScreen extends StatelessWidget {
                                             Text(
                                               '${tour['location']} • kinh nghiệm: ${tour['checkIns']}',
                                               style: const TextStyle(
+                                                fontFamily: 'Mulish',
                                                 color: Colors.grey,
                                                 fontSize: 12,
                                               ),
@@ -297,6 +309,7 @@ class ProgramListScreen extends StatelessWidget {
                   Text(
                     'Ẩm thực',
                     style: TextStyle(
+                      fontFamily: 'Mulish',
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

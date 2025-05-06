@@ -12,7 +12,6 @@ class MainScreen extends StatelessWidget {
 
   final List<Widget> screens = [
     ProgramListScreen(),
-    ProgramScreen(),
     PersonScreen(),
     SettingScreen(),
   ];
