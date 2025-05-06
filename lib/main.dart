@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/program_food_list_screen.dart';
 
-import 'package:hue_passport_app/screen/food/food_screen.dart';
 import 'package:hue_passport_app/screen/home/home_screen.dart';
 import 'package:hue_passport_app/screen/main/main_screen.dart';
 import 'package:hue_passport_app/screen/register/register_screen.dart';
@@ -11,7 +11,6 @@ import 'screen/login/login_screen.dart';
 import 'screen/program/program_screen.dart';
 import 'screen/person/person_screen.dart';
 import 'screen/setting/setting_screen.dart';
-import 'ChuongTrinhAmThuc/ChuongTrinhAmThuc_Screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -32,9 +31,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/program', page: () => ProgramScreen()),
         GetPage(name: '/person', page: () => PersonScreen()),
         GetPage(name: '/setting', page: () => SettingScreen()),
-        GetPage(name: '/food', page: () => FoodScreen()),
         GetPage(name: '/main', page: () => MainScreen()),
-        GetPage(name: '/foodprogram', page: () => FoodProgramScreen()),
+        GetPage(name: '/foodprogram', page: () => ProgramListScreen()),
       ],
     );
   }

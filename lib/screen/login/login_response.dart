@@ -23,22 +23,22 @@ class LoginResponse {
 class ResultObj {
   final String? accessToken;
   final String? refreshToken;
-//final String? quocTich;
-  // final String? tinhThanh;
+  final int? tinhThanhID;
+  final int? quocTichID;
 
   ResultObj({
     this.accessToken,
     this.refreshToken,
-    // this.quocTich,
-    //   this.tinhThanh,
+    this.tinhThanhID,
+    this.quocTichID,
   });
 
   factory ResultObj.fromJson(Map<String, dynamic> json) {
     return ResultObj(
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'],
-      // quocTich: json['quocTich'],
-      //  tinhThanh: json['tinhThanh'],
+      tinhThanhID: json['tinhThanhID'],
+      quocTichID: json['quocTichID'],
     );
   }
 }

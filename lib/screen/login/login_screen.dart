@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/screen/login/login_api_service.dart';
+import 'package:hue_passport_app/screen/tinhthanh/province_api_service.dart';
+import 'package:hue_passport_app/screen/tinhthanh/province_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -212,12 +214,39 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await LoginApiService().login(
+      final result = await LoginApiService().login(
         passportNumber: passportController.text,
         password: passwordController.text,
       );
-      _showMessage('Đăng nhập thành công!');
-      // TODO: Navigate đến home screen nếu cần
+      if (result!.quocTichID == 1 &&
+          (result.tinhThanhID == 0 || result.tinhThanhID == null)) {
+        // Người dùng Việt Nam nhưng chưa có tỉnh thành -> hiển thị dialog
+        final provinces = await ProvinceApiService.fetchProvinces();
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => ProvinceDialog(
+            provinces: provinces,
+            onConfirm: (selectedProvince) async {
+              try {
+                await ProvinceApiService.updateProvince(
+                  passportNumber: passportController.text.trim(),
+                  provinceID: selectedProvince.id.toString(),
+                );
+                _showMessage(
+                    "Cập nhật thành công: ${selectedProvince.tenDiaPhuong}");
+                // TODO: Chuyển hướng sau khi cập nhật
+                // Get.offAllNamed('/home');
+              } catch (e) {
+                _showMessage('Cập nhật thất bại: $e');
+              }
+            },
+          ),
+        );
+      } else {
+        _showMessage('Đăng nhập thành công!');
+        Get.offAllNamed('/main');
+      }
     } catch (e) {
       _showMessage('Lỗi: ${e.toString().replaceAll('Exception: ', '')}');
     } finally {

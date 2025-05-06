@@ -34,8 +34,9 @@ class RegisterController extends GetxController {
       final fetched = await NationalityApi.fetchNationalities();
       nationalities.assignAll(fetched);
 
-      final vn = fetched.firstWhereOrNull(
-          (n) => n.tenQuocTich.toLowerCase().contains('viet'));
+      final vn =
+          fetched.firstWhereOrNull((n) => n.quocTichID == 1); // ID của Việt Nam
+
       if (vn != null) {
         selectedNationality.value = vn;
         showProvinceField.value = true;
@@ -58,8 +59,7 @@ class RegisterController extends GetxController {
   void onSelectNationality(Nationality? nationality) {
     selectedNationality.value = nationality;
     if (nationality != null) {
-      bool isVietnamese =
-          nationality.tenQuocTich.toLowerCase().contains('viet');
+      bool isVietnamese = nationality.quocTichID == 1;
       showProvinceField.value = isVietnamese;
       if (isVietnamese) {
         fetchProvinces();

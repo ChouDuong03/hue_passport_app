@@ -23,6 +23,86 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
+  void _showNationalityDialog(BuildContext context) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Obx(() => Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue.shade200),
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: controller.nationalities.map((n) {
+                  return Flexible(
+                    // Sử dụng Flexible để điều chỉnh không gian
+                    child: RadioListTile<Nationality>(
+                      value: n,
+                      groupValue: controller.selectedNationality.value,
+                      onChanged: (val) {
+                        controller.onSelectNationality(val!);
+                        Get.back();
+                      },
+                      activeColor: Colors.blue,
+                      title: Text(n.tenQuocTich,
+                          style: const TextStyle(fontSize: 14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                      dense: true,
+                    ),
+                  );
+                }).toList(),
+              ),
+            )),
+      ),
+    );
+  }
+
+  void _showProvinceDialog(BuildContext context) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Obx(() => Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue.shade200),
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: controller.provinces.map((p) {
+                  return Flexible(
+                    // Cho phép phần tử tự điều chỉnh chiều cao
+                    child: RadioListTile<Province>(
+                      value: p,
+                      groupValue: controller.selectedProvince.value,
+                      onChanged: (val) {
+                        controller.selectedProvince.value = val!;
+                        Get.back();
+                      },
+                      activeColor: Colors.blue,
+                      title: Text(p.tenDiaPhuong,
+                          style: const TextStyle(fontSize: 14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                      dense: true,
+                    ),
+                  );
+                }).toList(),
+              ),
+            )),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,37 +232,61 @@ class RegisterScreen extends StatelessWidget {
                           const SizedBox(height: 16),
 
                           // Quốc tịch
-                          Obx(() => DropdownButtonFormField<Nationality>(
-                                value: controller.selectedNationality.value,
-                                items: controller.nationalities.map((n) {
-                                  return DropdownMenuItem<Nationality>(
-                                    value: n,
-                                    child: Text(n.tenQuocTich),
-                                  );
-                                }).toList(),
-                                onChanged: controller.onSelectNationality,
-                                decoration:
-                                    inputDecoration("Quốc tịch", Icons.public),
+                          // Ô chọn quốc tịch
+                          Obx(() => GestureDetector(
+                                onTap: () => _showNationalityDialog(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 16),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        controller.selectedNationality.value
+                                                ?.tenQuocTich ??
+                                            'Chọn quốc tịch',
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                      const Icon(Icons.arrow_drop_down),
+                                    ],
+                                  ),
+                                ),
                               )),
                           const SizedBox(height: 16),
 
                           // Tỉnh thành
                           Obx(() => controller.showProvinceField.value
-                              ? DropdownButtonFormField<Province>(
-                                  value: controller.selectedProvince.value,
-                                  items: controller.provinces.map((p) {
-                                    return DropdownMenuItem<Province>(
-                                      value: p,
-                                      child: Text(p.name),
-                                    );
-                                  }).toList(),
-                                  onChanged: (p) =>
-                                      controller.selectedProvince.value = p,
-                                  decoration: inputDecoration(
-                                      "Chọn tỉnh thành", Icons.location_city),
+                              ? GestureDetector(
+                                  onTap: () => _showProvinceDialog(context),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 16),
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.grey.shade300),
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          controller.selectedProvince.value
+                                                  ?.tenDiaPhuong ??
+                                              'Chọn tỉnh thành',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const Icon(Icons.arrow_drop_down),
+                                      ],
+                                    ),
+                                  ),
                                 )
                               : const SizedBox()),
-
                           const SizedBox(height: 30),
 
                           // Button Đăng ký

@@ -2,15 +2,14 @@
 
 class Province {
   final int id;
-  final String name;
+  final String tenDiaPhuong;
+  final String moTa;
 
-  Province({required this.id, required this.name});
+  Province({required this.id, required this.tenDiaPhuong, required this.moTa});
 
   factory Province.fromJson(Map<String, dynamic> json) {
     return Province(
-      id: json['tinhThanhID'],
-      name: json['tenTinhThanh'],
-    );
+        id: json['id'], tenDiaPhuong: json['tenDiaPhuong'], moTa: json['moTa']);
   }
 }
 
