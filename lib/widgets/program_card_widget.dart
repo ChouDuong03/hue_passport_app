@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
+import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 
 class ProgramCardWidget extends StatelessWidget {
   final ProgramFoodModel program;
@@ -210,7 +211,15 @@ class ProgramCardWidget extends StatelessWidget {
             right: 0,
             child: Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Thêm hành động khi nhấn nút (ví dụ: điều hướng đến màn hình chi tiết)
+
+                  if (controller.programs.isNotEmpty) {
+                    final chuongTrinhID =
+                        controller.programs[currentPage].chuongTrinhID;
+                    Get.to(() => DishListScreen(chuongTrinhID: chuongTrinhID));
+                  } // Ví dụ: điều hướng đến màn hình chi tiết
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   padding:

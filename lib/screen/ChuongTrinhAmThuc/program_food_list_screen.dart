@@ -1,48 +1,14 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
+import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 
 class ProgramListScreen extends StatelessWidget {
   final controller = Get.put(ProgramFoodController());
   final PageController _pageController = PageController();
 
   ProgramListScreen({super.key});
-
-  // Dữ liệu giả cho danh sách người dùng check-in
-  final List<Map<String, dynamic>> topCheckInUsers = [
-    {
-      'rank': 1,
-      'name': 'Robert Downey Jr.',
-      'location': 'Huế Food Tour',
-      'avatar': 'assets/images/user1.png',
-    },
-    {
-      'rank': 2,
-      'name': 'Elliott McCoy',
-      'location': 'Huế Food Tour',
-      'avatar': 'assets/images/user2.png',
-    },
-    {
-      'rank': 3,
-      'name': 'Nathalie Laing',
-      'location': 'Huế Food Tour',
-      'avatar': 'assets/images/user3.png',
-    },
-    {
-      'rank': 4,
-      'name': 'Kofi Davila',
-      'location': 'Huế Food Tour',
-      'avatar': 'assets/images/user4.png',
-    },
-    {
-      'rank': 5,
-      'name': 'Manikandan Jonoka',
-      'location': 'Huế Food Tour',
-      'avatar': 'assets/images/user5.png',
-    },
-  ];
 
   // Dữ liệu giả cho danh sách chương trình ẩm thực
   final List<Map<String, dynamic>> foodTours = [
@@ -130,10 +96,8 @@ class ProgramListScreen extends StatelessWidget {
                               final program = controller.programs[index];
                               return ProgramCardWidget(
                                 program: program,
-                                currentPage:
-                                    index, // Truyền vị trí trang hiện tại
-                                totalPages: controller
-                                    .programs.length, // Truyền tổng số trang
+                                currentPage: index,
+                                totalPages: controller.programs.length,
                               );
                             },
                           ),
@@ -156,60 +120,72 @@ class ProgramListScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            ListView.builder(
-                              shrinkWrap:
-                                  true, // Để ListView không chiếm toàn bộ không gian
-                              physics:
-                                  const NeverScrollableScrollPhysics(), // Tắt cuộn trong ListView
-                              itemCount: topCheckInUsers.length,
-                              itemBuilder: (context, index) {
-                                final user = topCheckInUsers[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        '${user['rank']}.',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                            Obx(() {
+                              if (controller.isLoadingTopUsers.value) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              if (controller.topCheckInUsers.isEmpty) {
+                                return const Center(
+                                    child:
+                                        Text('Không có dữ liệu top check-in.'));
+                              }
+
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: controller.topCheckInUsers.length > 5
+                                    ? 5
+                                    : controller.topCheckInUsers.length,
+                                itemBuilder: (context, index) {
+                                  final user =
+                                      controller.topCheckInUsers[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          '${index + 1}.',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const CircleAvatar(
-                                        radius: 12,
-                                        backgroundColor:
-                                            Colors.grey, // Màu placeholder
-                                        // backgroundImage: AssetImage(user['avatar']),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              user['name'],
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Text(
-                                              user['location'],
-                                              style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
+                                        const SizedBox(width: 8),
+                                        CircleAvatar(
+                                          radius: 12,
+                                          backgroundImage: AssetImage(
+                                              'assets/images/${user.anhDaiDien}'),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                user.hoTen, // Hiển thị tên quán
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Text(
+                                                user.tenQuan, // Giả định địa điểm
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -231,10 +207,8 @@ class ProgramListScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 8),
                             ListView.builder(
-                              shrinkWrap:
-                                  true, // Để ListView không chiếm toàn bộ không gian
-                              physics:
-                                  const NeverScrollableScrollPhysics(), // Tắt cuộn trong ListView
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
                               itemCount: foodTours.length,
                               itemBuilder: (context, index) {
                                 final tour = foodTours[index];
@@ -287,13 +261,49 @@ class ProgramListScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 20), // Khoảng cách dưới cùng
+                      const SizedBox(height: 60), // Khoảng cách dưới cùng
                     ],
                   ),
                 ),
               ],
             ),
-
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Thêm hành động khi nhấn nút (ví dụ: điều hướng đến màn hình chi tiết)
+                    final currentIndex = _pageController.page?.round() ?? 0;
+                    if (controller.programs.isNotEmpty) {
+                      final chuongTrinhID =
+                          controller.programs[currentIndex].chuongTrinhID;
+                      Get.to(
+                          () => DishListScreen(chuongTrinhID: chuongTrinhID));
+                    } // Ví dụ: điều hướng đến màn hình chi tiết
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853), // Màu xanh lục
+                    foregroundColor: Colors.white, // Màu chữ trắng
+                    minimumSize: const Size(double.infinity,
+                        50), // Chiều rộng toàn màn hình, chiều cao 50
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25), // Bo góc
+                    ),
+                  ),
+                  child: const Text(
+                    'Xem chi tiết',
+                    style: TextStyle(
+                      fontFamily: 'Mulish',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             // Avatar + tiêu đề nằm trên ảnh nền
             const Positioned(
               top: 30,
