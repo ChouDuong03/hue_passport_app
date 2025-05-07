@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
+import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_detail_screen.dart';
 
 class DishListScreen extends StatefulWidget {
   final int chuongTrinhID;
@@ -139,7 +140,8 @@ class _DishListScreenState extends State<DishListScreen> {
                                                     () => _isPressed = false),
                                                 onTap: () {
                                                   // Điều hướng đến màn hình chi tiết món ăn
-                                                  //   Get.to(() => DishDetailScreen(dish: dish));
+                                                  Get.to(() => DishDetailScreen(
+                                                      dish: dish));
                                                 },
                                                 child: AnimatedContainer(
                                                   duration: const Duration(

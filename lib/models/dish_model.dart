@@ -1,5 +1,5 @@
 class DishModel {
-  final String? id;
+  final int? id;
   final String tenMon;
   final int maLoai;
   final int kieuMon;

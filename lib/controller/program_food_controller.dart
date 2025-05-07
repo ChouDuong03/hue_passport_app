@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
+import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
 
@@ -10,12 +11,14 @@ class ProgramFoodController extends GetxController {
   var programs = <ProgramFoodModel>[].obs;
   var programDetailsCache = <int, ProgramFoodDetailModel>{}.obs;
   var dishesCache = <int, List<DishModel>>{}.obs;
+  var dishDetailCache = <int, DishDetailModel>{}.obs;
   var topCheckInUsers =
       <TopCheckInUserModel>[].obs; // Danh sách top 5 người dùng
   var isLoading = false.obs;
   var isLoadingDetail = false.obs;
   var isLoadingDishes = false.obs;
-  var isLoadingTopUsers = false.obs; // Loading cho top người dùng
+  var isLoadingTopUsers = false.obs;
+  var isLoadingDishDetail = false.obs; // Loading cho top người dùng
   final expandedProgramIds = <int>{}.obs;
 
   void toggleExpanded(int programId) {
@@ -54,6 +57,21 @@ class ProgramFoodController extends GetxController {
       print('Error loading program detail: $e');
     }
     isLoadingDetail.value = false;
+  }
+
+// Lấy chi tiết món ăn
+  Future<void> fetchDishDetail(int id) async {
+    if (dishDetailCache.containsKey(id)) return;
+    isLoadingDishDetail.value = true;
+    try {
+      final detail = await ProgramFoodApiService.fetchDishDetail(id);
+      dishDetailCache[id] = detail;
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Không thể tải chi tiết món ăn: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingDishDetail.value = false;
+    }
   }
 
   Future<void> fetchDishesByProgram(int chuongTrinhID) async {
