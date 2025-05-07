@@ -52,7 +52,7 @@ class ProgramListScreen extends StatelessWidget {
           children: [
             // Ảnh nền phía sau (border2)
             Container(
-              height: 250,
+              height: 100,
               width: double.infinity,
               decoration: const BoxDecoration(
                 image: DecorationImage(

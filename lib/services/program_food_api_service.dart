@@ -5,11 +5,18 @@ import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
 import 'package:hue_passport_app/models/top_checkin_user_model.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
+import 'package:get/get.dart';
 
 class ProgramFoodApiService {
   static const baseUrl = 'https://localhost:51125/api/ChuongTrinhAmThucs';
   static const dishBaseUrl = 'https://localhost:51125/api/MonAns';
   static const thongKeBaseUrl = 'https://localhost:51125/api/ThongKes';
+
+  // Ánh xạ giữa languageCode và ngonNguID
+  static const Map<String, int> languageIdMap = {
+    'vi': 1, // Tiếng Việt
+    'en': 4, // Tiếng Anh
+  };
 
   // Hàm xử lý chung cho việc kiểm tra thành công của API
   static Future<Map<String, dynamic>> _handleResponse(
@@ -46,21 +53,30 @@ class ProgramFoodApiService {
   // Lấy danh sách món ăn theo chương trình
   static Future<List<DishModel>> fetchDishesByProgram(int chuongTrinhID) async {
     final response = await http.get(
-      Uri.parse('$dishBaseUrl/GetDanhSachMonAnByChuongTrinh/$chuongTrinhID'),
-    );
+        Uri.parse('$dishBaseUrl/GetDanhSachMonAnByChuongTrinh/$chuongTrinhID'));
     final data = await _handleResponse(response);
     List list = data['resultObj'];
     return list.map((e) => DishModel.fromJson(e)).toList();
   }
 
-  // Lấy danh sách top 5 người dùng check-in
+  // Lấy danh sách top 5 người dùng check-in và lọc theo ngonNguID
   static Future<List<TopCheckInUserModel>> fetchTop5CheckInUsers() async {
-    final response = await http.get(
-      Uri.parse('$thongKeBaseUrl/ThongKeTop5CheckIn'),
-    );
+    final response =
+        await http.get(Uri.parse('$thongKeBaseUrl/ThongKeTop5CheckIn'));
     final data = await _handleResponse(response);
     List list = data['resultObj'];
-    return list.map((e) => TopCheckInUserModel.fromJson(e)).toList();
+
+    // Lấy ngôn ngữ hiện tại từ GetX
+    String currentLanguage =
+        Get.locale?.languageCode ?? 'vi'; // Mặc định là 'vi' nếu không xác định
+    int targetLanguageId =
+        languageIdMap[currentLanguage] ?? 1; // Mặc định là 1 nếu không tìm thấy
+
+    // Lọc danh sách theo ngonNguID
+    return list
+        .map((e) => TopCheckInUserModel.fromJson(e))
+        .where((user) => user.ngonNguID == targetLanguageId)
+        .toList();
   }
 
   static Future<DishDetailModel> fetchDishDetail(int id) async {

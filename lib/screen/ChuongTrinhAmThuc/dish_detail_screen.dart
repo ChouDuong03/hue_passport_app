@@ -9,16 +9,30 @@ class DishDetailScreen extends StatefulWidget {
   final ProgramFoodController controller = Get.find<ProgramFoodController>();
 
   DishDetailScreen({super.key, required this.dish}) {
-    // Chuyển đổi dish.id từ String? sang int
-    final int id = dish.id ?? 1; // Ép kiểu int rõ ràng
-    controller.fetchDishDetail(id); // Gọi API với id hợp lệ
+    final int id = dish.id ?? 1;
+    controller.fetchDishDetail(id);
   }
 
   @override
   State<DishDetailScreen> createState() => _DishDetailScreenState();
 }
 
-class _DishDetailScreenState extends State<DishDetailScreen> {
+class _DishDetailScreenState extends State<DishDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,9 +42,8 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
           SingleChildScrollView(
             child: Column(
               children: [
-                // Phần tiêu đề với ảnh nền
                 Container(
-                  height: 60, // Tăng chiều cao để bao phủ tiêu đề và mũi tên
+                  height: 60,
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
@@ -88,12 +101,10 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Hình ảnh món ăn
                         Center(
                           child: Stack(
                             alignment: Alignment.bottomCenter,
                             children: [
-                              // Ảnh món ăn
                               SizedBox(
                                 width: MediaQuery.of(context).size.width * 1,
                                 height: MediaQuery.of(context).size.width * 0.5,
@@ -102,7 +113,6 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                              // Gradient bóng mờ phía dưới ảnh
                               Positioned(
                                 bottom: 0,
                                 child: Container(
@@ -120,7 +130,6 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
                                   ),
                                 ),
                               ),
-                              // Chữ tenMon đè lên ảnh
                               Positioned(
                                 bottom: 16,
                                 left: 8,
@@ -146,153 +155,232 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Tiêu đề và thông tin cơ bản
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Giới thiệu | Danh sách quán ăn',
-                              style: TextStyle(
-                                fontFamily: 'Mulish',
-                                fontSize: 16,
-                                color: Colors.blue[700],
-                              ),
-                            ),
+                        // TabBar for switching between Giới Thiệu and Danh sách quán ăn
+                        TabBar(
+                          controller: _tabController,
+                          labelColor: Colors.blue[700],
+                          unselectedLabelColor: Colors.grey,
+                          labelStyle: const TextStyle(
+                            fontFamily: 'Mulish',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          unselectedLabelStyle: const TextStyle(
+                            fontFamily: 'Mulish',
+                            fontSize: 16,
+                          ),
+                          indicatorColor: Colors.blue[700],
+                          indicatorWeight: 3,
+                          tabs: const [
+                            Tab(text: 'Giới thiệu'),
+                            Tab(text: 'Danh sách quán ăn'),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${detail.tenMon} Huế',
-                          style: const TextStyle(
-                            fontFamily: 'Mulish',
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Loại món ăn: ${childDetail.tenLoai}',
-                          style: const TextStyle(
-                            fontFamily: 'Mulish',
-                            fontSize: 14,
-                          ),
-                        ),
                         const SizedBox(height: 16),
-                        // Mô tả (Phần ăn)
-                        const Text(
-                          'Mô tả',
-                          style: TextStyle(
-                            fontFamily: 'Mulish',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          childDetail.moTa.trim(),
-                          style: const TextStyle(
-                            fontFamily: 'Mulish',
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Thành phần
-                        const Text(
-                          'Thành phần',
-                          style: TextStyle(
-                            fontFamily: 'Mulish',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ..._parseIngredients(childDetail.thanhPhan)
-                            .map((ingredient) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
+
+                        // TabBarView to display content based on selected tab
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height *
+                              0.8, // Adjust height as needed
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              // Tab 1: Giới Thiệu
+                              SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${detail.tenMon} Huế',
+                                      style: const TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Loại món ăn: ${childDetail.tenLoai}',
+                                      style: const TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Mô tả',
+                                      style: TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      childDetail.moTa.trim(),
+                                      style: const TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Thành phần',
+                                      style: TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ..._parseIngredients(childDetail.thanhPhan)
+                                        .map((ingredient) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Text(
+                                                    '• ',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Mulish',
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      ingredient.trim(),
+                                                      style: const TextStyle(
+                                                        fontFamily: 'Mulish',
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Cách chế biến',
+                                      style: TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ..._parseSteps(childDetail.cachLam)
+                                        .map((step) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Text(
+                                                    '• ',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Mulish',
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      step,
+                                                      style: const TextStyle(
+                                                        fontFamily: 'Mulish',
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )),
+                                    const SizedBox(height: 16),
+                                    if (childDetail
+                                        .khuyenNghiKhiDung.isNotEmpty) ...[
                                       const Text(
-                                        '• ',
+                                        'Khuyến nghị khi dùng',
                                         style: TextStyle(
+                                          fontFamily: 'Mulish',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        childDetail.khuyenNghiKhiDung.trim(),
+                                        style: const TextStyle(
                                           fontFamily: 'Mulish',
                                           fontSize: 14,
                                         ),
                                       ),
-                                      Expanded(
-                                        child: Text(
-                                          ingredient.trim(),
-                                          style: const TextStyle(
-                                            fontFamily: 'Mulish',
-                                            fontSize: 14,
-                                          ),
-                                        ),
+                                      const SizedBox(height: 16),
+                                    ],
+                                  ],
+                                ),
+                              ),
+
+                              // Tab 2: Danh sách quán ăn
+                              const SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Quán bán Bánh bèo',
+                                      style: TextStyle(
+                                        fontFamily: 'Mulish',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    ...[
+                                      RestaurantItem(
+                                        name: 'Quán bà Đồ',
+                                        address: '8 Nguyễn Bình Khiêm',
+                                        hasCheckedIn: false,
+                                      ),
+                                      RestaurantItem(
+                                        name: 'Quán bánh bèo Lê',
+                                        address: '179 Kim Long',
+                                        hasCheckedIn: true,
+                                      ),
+                                      RestaurantItem(
+                                        name: 'Bánh bèo bà Cư Cung An Đình',
+                                        address: '23/177 Phan Đình Phùng',
+                                        hasCheckedIn: false,
+                                      ),
+                                      RestaurantItem(
+                                        name: 'Quán Hạnh',
+                                        address: '11 - 15 Phó Đức Chính',
+                                        hasCheckedIn: true,
+                                      ),
+                                      RestaurantItem(
+                                        name:
+                                            'Quán bánh bèo nổi tiếng Huế xuất',
+                                        address: '1 Nguyễn Bình Khiêm',
+                                        hasCheckedIn: false,
+                                      ),
+                                      RestaurantItem(
+                                        name: 'Bánh Độc dị Huế',
+                                        address: '9 Đồng Huy Trứ',
+                                        hasCheckedIn: false,
+                                      ),
+                                      RestaurantItem(
+                                        name: 'Quán Lê Việt Lương Chi',
+                                        address: '52 Lê Việt Lương',
+                                        hasCheckedIn: false,
                                       ),
                                     ],
-                                  ),
-                                )),
-                        const SizedBox(height: 16),
-
-                        // Cách làm (Món)
-                        const Text(
-                          'Cách làm',
-                          style: TextStyle(
-                            fontFamily: 'Mulish',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        ..._parseSteps(childDetail.cachLam)
-                            .map((step) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        '• ',
-                                        style: TextStyle(
-                                          fontFamily: 'Mulish',
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          step,
-                                          style: const TextStyle(
-                                            fontFamily: 'Mulish',
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )),
-                        const SizedBox(height: 16),
-
-                        // Khuyến nghị khi dùng
-                        if (childDetail.khuyenNghiKhiDung.isNotEmpty) ...[
-                          const Text(
-                            'Khuyến nghị khi dùng',
-                            style: TextStyle(
-                              fontFamily: 'Mulish',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            childDetail.khuyenNghiKhiDung.trim(),
-                            style: const TextStyle(
-                              fontFamily: 'Mulish',
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        const SizedBox(height: 80), // Khoảng cách cho nút
+                        const SizedBox(height: 80),
                       ],
                     );
                   }),
@@ -300,7 +388,6 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
               ],
             ),
           ),
-          // Nút Check-in cố định ở cuối màn hình
           Positioned(
             left: 16,
             right: 16,
@@ -334,19 +421,15 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
               ),
             ),
           ),
-          // Tiêu đề và nút quay lại
         ],
       ),
     );
   }
 
-  // Hàm phân tích cách làm thành các bước
   List<String> _parseSteps(String text) {
     final steps = text.split('\r\nBước ').where((s) => s.isNotEmpty).toList();
     if (steps.isNotEmpty) {
-      // Loại bỏ ký tự thừa ở bước đầu nếu có
       steps[0] = steps[0].replaceFirst('\r\n', '');
-      // Thêm "Bước " vào đầu mỗi bước
       for (int i = 0; i < steps.length; i++) {
         if (!steps[i].trim().startsWith('Bước ')) {
           steps[i] = 'Bước ${steps[i].trim()}';
@@ -356,13 +439,69 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
     return steps.map((s) => s.trim()).toList();
   }
 
-  // Hàm phân tích thành phần thành danh sách
   List<String> _parseIngredients(String text) {
     return text.split(';').map((s) => s.trim()).toList();
   }
 }
 
-// Placeholder cho trang Check-in
+class RestaurantItem extends StatelessWidget {
+  final String name;
+  final String address;
+  final bool hasCheckedIn;
+
+  const RestaurantItem({
+    super.key,
+    required this.name,
+    required this.address,
+    required this.hasCheckedIn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.location_pin,
+            color: Colors.red,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'Mulish',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  address,
+                  style: const TextStyle(
+                    fontFamily: 'Mulish',
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (hasCheckedIn)
+            const Icon(
+              Icons.check_circle,
+              color: Color(0xFF00C853),
+              size: 20,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class CheckInPlaceholderScreen extends StatelessWidget {
   final DishModel dish;
 
