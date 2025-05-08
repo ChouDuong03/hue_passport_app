@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
+import 'package:hue_passport_app/models/location_model.dart';
 
 class DishDetailScreen extends StatefulWidget {
   final DishModel dish;
@@ -11,6 +12,7 @@ class DishDetailScreen extends StatefulWidget {
   DishDetailScreen({super.key, required this.dish}) {
     final int id = dish.id ?? 1;
     controller.fetchDishDetail(id);
+    controller.fetchLocationsByDish(id); // Sử dụng dish.id để lấy địa điểm
   }
 
   @override
@@ -154,8 +156,6 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                           ),
                         ),
                         const SizedBox(height: 16),
-
-                        // TabBar for switching between Giới Thiệu and Danh sách quán ăn
                         TabBar(
                           controller: _tabController,
                           labelColor: Colors.blue[700],
@@ -177,15 +177,11 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                           ],
                         ),
                         const SizedBox(height: 16),
-
-                        // TabBarView to display content based on selected tab
                         SizedBox(
-                          height: MediaQuery.of(context).size.height *
-                              0.8, // Adjust height as needed
+                          height: MediaQuery.of(context).size.height * 0.8,
                           child: TabBarView(
                             controller: _tabController,
                             children: [
-                              // Tab 1: Giới Thiệu
                               SingleChildScrollView(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,62 +317,36 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                   ],
                                 ),
                               ),
-
-                              // Tab 2: Danh sách quán ăn
-                              const SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Quán bán Bánh bèo',
-                                      style: TextStyle(
-                                        fontFamily: 'Mulish',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    ...[
-                                      RestaurantItem(
-                                        name: 'Quán bà Đồ',
-                                        address: '8 Nguyễn Bình Khiêm',
-                                        hasCheckedIn: false,
-                                      ),
-                                      RestaurantItem(
-                                        name: 'Quán bánh bèo Lê',
-                                        address: '179 Kim Long',
-                                        hasCheckedIn: true,
-                                      ),
-                                      RestaurantItem(
-                                        name: 'Bánh bèo bà Cư Cung An Đình',
-                                        address: '23/177 Phan Đình Phùng',
-                                        hasCheckedIn: false,
-                                      ),
-                                      RestaurantItem(
-                                        name: 'Quán Hạnh',
-                                        address: '11 - 15 Phó Đức Chính',
-                                        hasCheckedIn: true,
-                                      ),
-                                      RestaurantItem(
-                                        name:
-                                            'Quán bánh bèo nổi tiếng Huế xuất',
-                                        address: '1 Nguyễn Bình Khiêm',
-                                        hasCheckedIn: false,
-                                      ),
-                                      RestaurantItem(
-                                        name: 'Bánh Độc dị Huế',
-                                        address: '9 Đồng Huy Trứ',
-                                        hasCheckedIn: false,
-                                      ),
-                                      RestaurantItem(
-                                        name: 'Quán Lê Việt Lương Chi',
-                                        address: '52 Lê Việt Lương',
-                                        hasCheckedIn: false,
-                                      ),
+                              Obx(() {
+                                if (widget
+                                    .controller.isLoadingLocations.value) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+                                final locations = widget.controller
+                                        .locationsCache[widget.dish.id ?? 1] ??
+                                    [];
+                                if (locations.isEmpty) {
+                                  return const Center(
+                                      child: Text('Không có địa điểm nào.'));
+                                }
+                                return SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      ...locations
+                                          .map((location) => RestaurantItem(
+                                                name: location.tenDiaDiem,
+                                                soNha: location.soNha,
+                                                duongPho: location.duongPho,
+                                                hasCheckedIn: false,
+                                              )),
                                     ],
-                                  ],
-                                ),
-                              ),
+                                  ),
+                                );
+                              }),
                             ],
                           ),
                         ),
@@ -446,13 +416,15 @@ class _DishDetailScreenState extends State<DishDetailScreen>
 
 class RestaurantItem extends StatelessWidget {
   final String name;
-  final String address;
+  final String soNha;
+  final String duongPho;
   final bool hasCheckedIn;
 
   const RestaurantItem({
     super.key,
     required this.name,
-    required this.address,
+    required this.soNha,
+    required this.duongPho,
     required this.hasCheckedIn,
   });
 
@@ -461,13 +433,9 @@ class RestaurantItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.location_pin,
-            color: Colors.red,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 8), // Khoảng cách bên trái
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,12 +448,26 @@ class RestaurantItem extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  address,
-                  style: const TextStyle(
-                    fontFamily: 'Mulish',
-                    fontSize: 14,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.location_pin,
+                      color: Colors.red,
+                      size: 16, // Giảm kích thước để phù hợp hơn
+                    ),
+                    const SizedBox(
+                        width: 4), // Khoảng cách giữa icon và địa chỉ
+                    Expanded(
+                      child: Text(
+                        '$soNha $duongPho',
+                        style: const TextStyle(
+                          fontFamily: 'Mulish',
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

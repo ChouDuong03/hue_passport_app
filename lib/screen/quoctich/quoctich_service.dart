@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:hue_passport_app/screen/quoctich/quoctich_model.dart';
 
 class NationalityApi {
-  static const String baseUrl = 'https://localhost:51125/API';
+  static const String baseUrl = 'https://localhost:51379/API';
 
   static Future<List<Nationality>> fetchNationalities() async {
     final response = await http.get(Uri.parse('$baseUrl/QuocTich/Gets'));

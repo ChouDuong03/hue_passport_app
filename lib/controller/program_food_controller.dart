@@ -3,8 +3,8 @@ import 'package:hue_passport_app/models/dish_model.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
-
 import 'package:hue_passport_app/models/top_checkin_user_model.dart';
+import 'package:hue_passport_app/models/location_model.dart';
 import 'package:hue_passport_app/services/program_food_api_service.dart';
 
 class ProgramFoodController extends GetxController {
@@ -12,13 +12,14 @@ class ProgramFoodController extends GetxController {
   var programDetailsCache = <int, ProgramFoodDetailModel>{}.obs;
   var dishesCache = <int, List<DishModel>>{}.obs;
   var dishDetailCache = <int, DishDetailModel>{}.obs;
-  var topCheckInUsers =
-      <TopCheckInUserModel>[].obs; // Danh sách top 5 người dùng
+  var topCheckInUsers = <TopCheckInUserModel>[].obs;
+  var locationsCache = <int, List<LocationModel>>{}.obs; // Cache theo dishId
   var isLoading = false.obs;
   var isLoadingDetail = false.obs;
   var isLoadingDishes = false.obs;
   var isLoadingTopUsers = false.obs;
-  var isLoadingDishDetail = false.obs; // Loading cho top người dùng
+  var isLoadingDishDetail = false.obs;
+  var isLoadingLocations = false.obs;
   final expandedProgramIds = <int>{}.obs;
 
   void toggleExpanded(int programId) {
@@ -32,7 +33,7 @@ class ProgramFoodController extends GetxController {
   @override
   void onInit() {
     fetchPrograms();
-    fetchTop5CheckInUsers(); // Gọi API top người dùng khi khởi tạo
+    fetchTop5CheckInUsers();
     super.onInit();
   }
 
@@ -59,7 +60,6 @@ class ProgramFoodController extends GetxController {
     isLoadingDetail.value = false;
   }
 
-// Lấy chi tiết món ăn
   Future<void> fetchDishDetail(int id) async {
     if (dishDetailCache.containsKey(id)) return;
     isLoadingDishDetail.value = true;
@@ -87,9 +87,8 @@ class ProgramFoodController extends GetxController {
     isLoadingDishes.value = false;
   }
 
-  // Lấy danh sách top 5 người dùng check-in
   Future<void> fetchTop5CheckInUsers() async {
-    if (topCheckInUsers.isNotEmpty) return; // Tránh gọi lại nếu đã có dữ liệu
+    if (topCheckInUsers.isNotEmpty) return;
     isLoadingTopUsers.value = true;
     try {
       final users = await ProgramFoodApiService.fetchTop5CheckInUsers();
@@ -98,5 +97,22 @@ class ProgramFoodController extends GetxController {
       print('Error loading top check-in users: $e');
     }
     isLoadingTopUsers.value = false;
+  }
+
+  // Sửa để lấy danh sách địa điểm theo dishId
+  Future<void> fetchLocationsByDish(int dishId) async {
+    if (locationsCache.containsKey(dishId)) return;
+    isLoadingLocations.value = true;
+    try {
+      final locations =
+          await ProgramFoodApiService.fetchLocationsByDish(dishId);
+      locationsCache[dishId] = locations;
+    } catch (e) {
+      print('Error loading locations: $e');
+      Get.snackbar('Lỗi', 'Không thể tải danh sách địa điểm: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingLocations.value = false;
+    }
   }
 }

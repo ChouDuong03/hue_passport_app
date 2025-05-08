@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:hue_passport_app/screen/tinhthanh/province_model.dart';
 
 class ProvinceApiService {
-  static const String baseUrl = 'https://localhost:51125/api';
+  static const String baseUrl = 'https://localhost:51379/api';
 
   // Lấy danh sách tỉnh thành
   static Future<List<Province>> fetchProvinces() async {
