@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hue_passport_app/models/program_progess.dart';
 import 'package:hue_passport_app/models/program_time.dart';
-import 'package:hue_passport_app/models/program_food_model.dart'; // Thêm import
+import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/screen/login/login_screen.dart';
 import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/widgets/program_progess_card.dart';
+import 'package:hue_passport_app/controller/nav_controller.dart';
 
 class PersonScreen extends StatelessWidget {
   final int chuongTrinhID;
@@ -14,6 +15,9 @@ class PersonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy NavController từ GetX
+    final NavController navController = Get.find<NavController>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
@@ -36,7 +40,10 @@ class PersonScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        // Quay lại tab trước đó bằng NavController
+                        navController.goBackToPreviousTab();
+                      },
                     ),
                     const Text(
                       'Hộ chiếu du lịch',
@@ -71,8 +78,7 @@ class PersonScreen extends StatelessWidget {
                               .fetchProgramProgress(chuongTrinhID),
                           ProgramFoodApiService()
                               .fetchProgramTime(chuongTrinhID),
-                          ProgramFoodApiService()
-                              .fetchPrograms(), // Lấy danh sách chương trình
+                          ProgramFoodApiService().fetchPrograms(),
                         ]),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
@@ -131,7 +137,6 @@ class PersonScreen extends StatelessWidget {
                           final programs =
                               snapshot.data![2] as List<ProgramFoodModel>;
 
-                          // Lọc chương trình dựa trên chuongTrinhID
                           final program = programs.firstWhere(
                             (p) => p.chuongTrinhID == chuongTrinhID,
                             orElse: () => ProgramFoodModel(
@@ -143,10 +148,8 @@ class PersonScreen extends StatelessWidget {
                             ),
                           );
 
-                          // Sử dụng tenChuongTrinh từ ProgramFoodModel
                           return ProgramProgressCard(
-                            title:
-                                program.tenChuongTrinh, // Truyền tenChuongTrinh
+                            title: program.tenChuongTrinh,
                             progress: progress,
                             time: time,
                           );

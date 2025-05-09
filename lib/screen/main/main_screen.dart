@@ -4,7 +4,6 @@ import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/program_food_list_screen.dart';
 import 'package:hue_passport_app/screen/login/login_screen.dart';
 import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
-
 import 'package:hue_passport_app/screen/program/program_screen.dart';
 import 'package:hue_passport_app/screen/person/person_screen.dart';
 import 'package:hue_passport_app/screen/setting/setting_screen.dart';
@@ -16,8 +15,7 @@ class MainScreen extends StatelessWidget {
   final List<Widget> screens = [
     ProgramListScreen(),
     ProgramScreen(),
-    PersonScreen(
-        chuongTrinhID: 1), // Truyền chuongTrinhID mặc định, có thể thay đổi
+    PersonScreen(chuongTrinhID: 1),
     SettingScreen(),
   ];
 
@@ -28,7 +26,6 @@ class MainScreen extends StatelessWidget {
   Future<void> _checkLoginStatus() async {
     final token = await storageService.getAccessToken();
     if (token == null) {
-      // Nếu không có token, điều hướng đến LoginScreen
       Get.offAll(() => LoginScreen());
     }
   }
