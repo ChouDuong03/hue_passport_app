@@ -4,93 +4,144 @@ import 'package:hue_passport_app/models/location_model.dart';
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
+import 'package:hue_passport_app/models/program_progess.dart';
+import 'package:hue_passport_app/models/program_time.dart';
 import 'package:hue_passport_app/models/top_checkin_user_model.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
+import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl = 'https://localhost:51379/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://localhost:51379/api/MonAns';
-  static const thongKeBaseUrl = 'https://localhost:51379/api/ThongKes';
-  static const danhSachQuanAn = 'https://localhost:51379/api/DiaDiemMonAns';
+  static const baseUrl = 'https://localhost:51078/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://localhost:51078/api/MonAns';
+  static const thongKeBaseUrl = 'https://localhost:51078/api/ThongKes';
+  static const danhSachQuanAn = 'https://localhost:51078/api/DiaDiemMonAns';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
     'en': 4, // Tiếng Anh
   };
 
+  final SecureStorageService storageService = SecureStorageService();
+
+  Future<String?> _getToken() async {
+    return await storageService.getAccessToken();
+  }
+
   static Future<Map<String, dynamic>> _handleResponse(
       http.Response response) async {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      if (data['isSuccessed']) {
-        return data;
-      } else {
-        throw Exception('API returned failure: ${data['message']}');
-      }
+      return data;
     } else {
       throw Exception(
-          'Failed to load data, status code: ${response.statusCode}');
+          'Failed to load data, status code: ${response.statusCode}, message: ${response.body}');
     }
   }
 
-  static Future<List<ProgramFoodModel>> fetchPrograms() async {
-    final response = await http.get(Uri.parse('$baseUrl/Gets'));
+  Future<List<ProgramFoodModel>> fetchPrograms() async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/Gets'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
     final data = await _handleResponse(response);
     List list = data['resultObj'];
     return list.map((e) => ProgramFoodModel.fromJson(e)).toList();
   }
 
-  static Future<ProgramFoodDetailModel> fetchProgramDetail(int id) async {
-    final response =
-        await http.get(Uri.parse('$baseUrl/GetChiTietChuongTrinh/$id'));
+  Future<ProgramFoodDetailModel> fetchProgramDetail(int id) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/GetChiTietChuongTrinh/$id'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
     final data = await _handleResponse(response);
     return ProgramFoodDetailModel.fromJson(data['resultObj']);
   }
 
-  static Future<List<DishModel>> fetchDishesByProgram(int chuongTrinhID) async {
+  Future<List<DishModel>> fetchDishesByProgram(int chuongTrinhID) async {
+    final token = await _getToken();
     final response = await http.get(
-        Uri.parse('$dishBaseUrl/GetDanhSachMonAnByChuongTrinh/$chuongTrinhID'));
+      Uri.parse('$dishBaseUrl/GetDanhSachMonAnByChuongTrinh/$chuongTrinhID'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
     final data = await _handleResponse(response);
     List list = data['resultObj'];
     return list.map((e) => DishModel.fromJson(e)).toList();
   }
 
-  static Future<List<TopCheckInUserModel>> fetchTop5CheckInUsers() async {
-    final response =
-        await http.get(Uri.parse('$thongKeBaseUrl/ThongKeTop5CheckIn'));
+  Future<List<TopCheckInUserModel>> fetchTop5CheckInUsers() async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$thongKeBaseUrl/ThongKeTop5CheckIn'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
     final data = await _handleResponse(response);
     List list = data['resultObj'];
-
     String currentLanguage = Get.locale?.languageCode ?? 'vi';
     int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
-
     return list
         .map((e) => TopCheckInUserModel.fromJson(e))
         .where((user) => user.ngonNguID == targetLanguageId)
         .toList();
   }
 
-  // Sửa lại để lấy danh sách địa điểm theo dishId
-  static Future<List<LocationModel>> fetchLocationsByDish(int dishId) async {
-    final response = await http
-        .get(Uri.parse('$danhSachQuanAn/GetDanhSachDiaDiemByMonAn/$dishId'));
+  Future<List<LocationModel>> fetchLocationsByDish(int dishId) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$danhSachQuanAn/GetDanhSachDiaDiemByMonAn/$dishId'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
     final data = await _handleResponse(response);
     List list = data['resultObj'];
-
     String currentLanguage = Get.locale?.languageCode ?? 'vi';
     int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
-
     return list
         .map((e) => LocationModel.fromJson(e))
         .where((location) => location.ngonNguID == targetLanguageId)
         .toList();
   }
 
-  static Future<DishDetailModel> fetchDishDetail(int id) async {
-    final response =
-        await http.get(Uri.parse('$dishBaseUrl/GetChiTietMonAn/$id'));
+  Future<DishDetailModel> fetchDishDetail(int id) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$dishBaseUrl/GetChiTietMonAn/$id'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
     final data = await _handleResponse(response);
     return DishDetailModel.fromJson(data);
+  }
+
+  Future<int> fetchCheckInCount() async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$danhSachQuanAn/DemSoDiaDiemCheckin'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final data = await _handleResponse(response);
+    return data['count'] as int;
+  }
+
+  Future<ProgramProgress> fetchProgramProgress(int chuongTrinhID) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/TienDoThamGiaVaHoanThanhChuongTrinh?chuongTrinhID=$chuongTrinhID'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final data = await _handleResponse(response);
+    return ProgramProgress.fromJson(data);
+  }
+
+  Future<ProgramTime> fetchProgramTime(int chuongTrinhID) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/CheckQuaHanThamGiaChuongTrinh?chuongTrinhID=$chuongTrinhID'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final data = await _handleResponse(response);
+    return ProgramTime.fromJson(data);
   }
 }

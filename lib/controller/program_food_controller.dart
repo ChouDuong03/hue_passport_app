@@ -22,6 +22,9 @@ class ProgramFoodController extends GetxController {
   var isLoadingLocations = false.obs;
   final expandedProgramIds = <int>{}.obs;
 
+  // Khởi tạo instance của ProgramFoodApiService
+  final ProgramFoodApiService apiService = ProgramFoodApiService();
+
   void toggleExpanded(int programId) {
     if (expandedProgramIds.contains(programId)) {
       expandedProgramIds.remove(programId);
@@ -37,35 +40,47 @@ class ProgramFoodController extends GetxController {
     super.onInit();
   }
 
-  void fetchPrograms() async {
+  Future<void> fetchPrograms() async {
     isLoading.value = true;
     try {
-      final data = await ProgramFoodApiService.fetchPrograms();
+      final data = await apiService.fetchPrograms();
       programs.assignAll(data);
     } catch (e) {
-      print('Error loading programs: $e');
+      Get.snackbar('Lỗi', 'Không thể tải danh sách chương trình: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
     }
-    isLoading.value = false;
   }
 
   Future<void> fetchProgramDetail(int id) async {
     if (programDetailsCache.containsKey(id)) return;
     isLoadingDetail.value = true;
     try {
-      final detail = await ProgramFoodApiService.fetchProgramDetail(id);
-      programDetailsCache[id] = detail;
+      final detail = await apiService.fetchProgramDetail(id);
+      if (detail != null) {
+        programDetailsCache[id] = detail;
+      } else {
+        throw Exception('Không tìm thấy chi tiết chương trình');
+      }
     } catch (e) {
-      print('Error loading program detail: $e');
+      Get.snackbar('Lỗi', 'Không thể tải chi tiết chương trình: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingDetail.value = false;
     }
-    isLoadingDetail.value = false;
   }
 
   Future<void> fetchDishDetail(int id) async {
     if (dishDetailCache.containsKey(id)) return;
     isLoadingDishDetail.value = true;
     try {
-      final detail = await ProgramFoodApiService.fetchDishDetail(id);
-      dishDetailCache[id] = detail;
+      final detail = await apiService.fetchDishDetail(id);
+      if (detail != null) {
+        dishDetailCache[id] = detail;
+      } else {
+        throw Exception('Không tìm thấy chi tiết món ăn');
+      }
     } catch (e) {
       Get.snackbar('Lỗi', 'Không thể tải chi tiết món ăn: $e',
           snackPosition: SnackPosition.BOTTOM);
@@ -78,37 +93,49 @@ class ProgramFoodController extends GetxController {
     if (dishesCache.containsKey(chuongTrinhID)) return;
     isLoadingDishes.value = true;
     try {
-      final dishes =
-          await ProgramFoodApiService.fetchDishesByProgram(chuongTrinhID);
-      dishesCache[chuongTrinhID] = dishes;
+      final dishes = await apiService.fetchDishesByProgram(chuongTrinhID);
+      if (dishes != null && dishes.isNotEmpty) {
+        dishesCache[chuongTrinhID] = dishes;
+      } else {
+        throw Exception('Không tìm thấy danh sách món ăn');
+      }
     } catch (e) {
-      print('Error loading dishes: $e');
+      Get.snackbar('Lỗi', 'Không thể tải danh sách món ăn: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingDishes.value = false;
     }
-    isLoadingDishes.value = false;
   }
 
   Future<void> fetchTop5CheckInUsers() async {
     if (topCheckInUsers.isNotEmpty) return;
     isLoadingTopUsers.value = true;
     try {
-      final users = await ProgramFoodApiService.fetchTop5CheckInUsers();
-      topCheckInUsers.assignAll(users);
+      final users = await apiService.fetchTop5CheckInUsers();
+      if (users != null && users.isNotEmpty) {
+        topCheckInUsers.assignAll(users);
+      } else {
+        throw Exception('Không tìm thấy danh sách người dùng check-in');
+      }
     } catch (e) {
-      print('Error loading top check-in users: $e');
+      Get.snackbar('Lỗi', 'Không thể tải danh sách người dùng check-in: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingTopUsers.value = false;
     }
-    isLoadingTopUsers.value = false;
   }
 
-  // Sửa để lấy danh sách địa điểm theo dishId
   Future<void> fetchLocationsByDish(int dishId) async {
     if (locationsCache.containsKey(dishId)) return;
     isLoadingLocations.value = true;
     try {
-      final locations =
-          await ProgramFoodApiService.fetchLocationsByDish(dishId);
-      locationsCache[dishId] = locations;
+      final locations = await apiService.fetchLocationsByDish(dishId);
+      if (locations != null && locations.isNotEmpty) {
+        locationsCache[dishId] = locations;
+      } else {
+        throw Exception('Không tìm thấy danh sách địa điểm');
+      }
     } catch (e) {
-      print('Error loading locations: $e');
       Get.snackbar('Lỗi', 'Không thể tải danh sách địa điểm: $e',
           snackPosition: SnackPosition.BOTTOM);
     } finally {

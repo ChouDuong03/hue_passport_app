@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/program_food_list_screen.dart';
+import 'package:hue_passport_app/screen/login/login_screen.dart';
+import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 
 import 'package:hue_passport_app/screen/program/program_screen.dart';
 import 'package:hue_passport_app/screen/person/person_screen.dart';
@@ -9,12 +11,27 @@ import 'package:hue_passport_app/screen/setting/setting_screen.dart';
 
 class MainScreen extends StatelessWidget {
   final NavController navController = Get.put(NavController());
+  final SecureStorageService storageService = SecureStorageService();
 
   final List<Widget> screens = [
     ProgramListScreen(),
-    PersonScreen(),
+    ProgramScreen(),
+    PersonScreen(
+        chuongTrinhID: 1), // Truyền chuongTrinhID mặc định, có thể thay đổi
     SettingScreen(),
   ];
+
+  MainScreen({super.key}) {
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final token = await storageService.getAccessToken();
+    if (token == null) {
+      // Nếu không có token, điều hướng đến LoginScreen
+      Get.offAll(() => LoginScreen());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +68,9 @@ class MainScreen extends StatelessWidget {
               items: [
                 BottomNavigationBarItem(
                   icon: Image.asset(
-                    navController.selectedIndex.value == 1
-                        ? 'assets/images/foodicon2.png'
-                        : 'assets/images/foodicon.png',
+                    navController.selectedIndex.value == 0
+                        ? 'assets/images/foodicon.png'
+                        : 'assets/images/foodicon2.png',
                     width: 24,
                     height: 24,
                   ),
