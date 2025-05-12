@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:hue_passport_app/models/location_model.dart';
+import 'package:hue_passport_app/models/location_model_2.dart';
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
@@ -12,10 +13,10 @@ import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl = 'https://localhost:51078/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://localhost:51078/api/MonAns';
-  static const thongKeBaseUrl = 'https://localhost:51078/api/ThongKes';
-  static const danhSachQuanAn = 'https://localhost:51078/api/DiaDiemMonAns';
+  static const baseUrl = 'https://localhost:58586/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://localhost:58586/api/MonAns';
+  static const thongKeBaseUrl = 'https://localhost:58586/api/ThongKes';
+  static const danhSachQuanAn = 'https://localhost:58586/api/DiaDiemMonAns';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
@@ -99,6 +100,24 @@ class ProgramFoodApiService {
     int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
     return list
         .map((e) => LocationModel.fromJson(e))
+        .where((location) => location.ngonNguID == targetLanguageId)
+        .toList();
+  }
+
+  Future<List<LocationModel2>> fetchLocationsByDish2(int dishId) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse(
+          'https://localhost:58586/api/Accounts/lichsu-checkin?monAnID=$dishId'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final data = await _handleResponse(response);
+    List list = data['resultObj'];
+
+    String currentLanguage = Get.locale?.languageCode ?? 'vi';
+    int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
+    return list
+        .map((e) => LocationModel2.fromJson(e))
         .where((location) => location.ngonNguID == targetLanguageId)
         .toList();
   }

@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
-import 'package:hue_passport_app/models/location_model.dart';
+import 'package:hue_passport_app/models/location_model_2.dart';
+import 'package:hue_passport_app/screen/Camera/camera_screen.dart';
 
 class DishDetailScreen extends StatefulWidget {
   final DishModel dish;
@@ -12,7 +13,7 @@ class DishDetailScreen extends StatefulWidget {
   DishDetailScreen({super.key, required this.dish}) {
     final int id = dish.id ?? 1;
     controller.fetchDishDetail(id);
-    controller.fetchLocationsByDish(id); // Sử dụng dish.id để lấy địa điểm
+    controller.fetchLocationsByDish2(id); // Sử dụng dish.id để lấy địa điểm
   }
 
   @override
@@ -324,7 +325,7 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                       child: CircularProgressIndicator());
                                 }
                                 final locations = widget.controller
-                                        .locationsCache[widget.dish.id ?? 1] ??
+                                        .locationsCache2[widget.dish.id ?? 1] ??
                                     [];
                                 if (locations.isEmpty) {
                                   return const Center(
@@ -338,10 +339,11 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                       const SizedBox(height: 8),
                                       ...locations
                                           .map((location) => RestaurantItem(
-                                                name: location.tenDiaDiem,
+                                                name: location.ten,
                                                 soNha: location.soNha,
                                                 duongPho: location.duongPho,
-                                                hasCheckedIn: false,
+                                                hasCheckedIn:
+                                                    location.isCheckedIn,
                                               )),
                                     ],
                                   ),
@@ -364,7 +366,7 @@ class _DishDetailScreenState extends State<DishDetailScreen>
             bottom: 16,
             child: ElevatedButton(
               onPressed: () {
-                Get.to(() => CheckInPlaceholderScreen(dish: widget.dish));
+                Get.to(() => FakeCameraScreen(chuongTrinhId: 1, monAnId: 1));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00C853),
@@ -473,10 +475,14 @@ class RestaurantItem extends StatelessWidget {
             ),
           ),
           if (hasCheckedIn)
-            const Icon(
-              Icons.check_circle,
-              color: Color(0xFF00C853),
-              size: 20,
+            const Padding(
+              padding: EdgeInsets.only(
+                  left: 8), // Khoảng cách giữa thông tin và icon
+              child: Icon(
+                Icons.check_circle,
+                color: Color(0xFF00C853),
+                size: 20,
+              ),
             ),
         ],
       ),
