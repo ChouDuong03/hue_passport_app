@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
+import 'package:hue_passport_app/models/location_model.dart';
 import 'package:hue_passport_app/models/location_model_2.dart';
 import 'package:hue_passport_app/screen/Camera/camera_screen.dart';
+import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/restaurant_detail_screen.dart';
 
 class DishDetailScreen extends StatefulWidget {
   final DishModel dish;
@@ -13,12 +15,15 @@ class DishDetailScreen extends StatefulWidget {
   DishDetailScreen({super.key, required this.dish}) {
     final int id = dish.id ?? 1;
     controller.fetchDishDetail(id);
-    controller.fetchLocationsByDish2(id); // Sử dụng dish.id để lấy địa điểm
+    controller.fetchLocationsByDish2(id); // Lấy danh sách check-in
+    controller.fetchLocationsByDish(id); // Lấy danh sách chi tiết địa điểm
   }
 
   @override
   State<DishDetailScreen> createState() => _DishDetailScreenState();
 }
+
+final baseUrl = "https://localhost:51512";
 
 class _DishDetailScreenState extends State<DishDetailScreen>
     with SingleTickerProviderStateMixin {
@@ -88,7 +93,8 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                         BorderRadius.vertical(top: Radius.circular(24)),
                   ),
                   child: Obx(() {
-                    if (widget.controller.isLoadingDishDetail.value) {
+                    if (widget.controller.isLoadingDishDetail.value ||
+                        widget.controller.isLoadingLocations.value) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
@@ -109,17 +115,18 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                             alignment: Alignment.bottomCenter,
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width * 1,
+                                width: MediaQuery.of(context).size.width,
                                 height: MediaQuery.of(context).size.width * 0.5,
-                                child: Image.asset(
-                                  'assets/images/${widget.dish.anhDaiDien}',
+                                child: Image.network(
+                                  "$baseUrl${widget.dish.anhDaiDien}",
+                                  width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               Positioned(
                                 bottom: 0,
                                 child: Container(
-                                  width: MediaQuery.of(context).size.width * 1,
+                                  width: MediaQuery.of(context).size.width,
                                   height: 40,
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
@@ -319,32 +326,51 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                 ),
                               ),
                               Obx(() {
-                                if (widget
-                                    .controller.isLoadingLocations.value) {
-                                  return const Center(
-                                      child: CircularProgressIndicator());
-                                }
                                 final locations = widget.controller
                                         .locationsCache2[widget.dish.id ?? 1] ??
                                     [];
-                                if (locations.isEmpty) {
+                                final locations1 = widget.controller
+                                        .locationsCache[widget.dish.id ?? 1] ??
+                                    [];
+
+                                if (locations.isEmpty && locations1.isEmpty) {
                                   return const Center(
                                       child: Text('Không có địa điểm nào.'));
                                 }
+
+                                if (locations.length != locations1.length) {
+                                  return const Center(
+                                      child: Text(
+                                          'Dữ liệu địa điểm không đồng bộ. Vui lòng thử lại sau.'));
+                                }
+
                                 return SingleChildScrollView(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 8),
-                                      ...locations
-                                          .map((location) => RestaurantItem(
-                                                name: location.ten,
-                                                soNha: location.soNha,
-                                                duongPho: location.duongPho,
-                                                hasCheckedIn:
-                                                    location.isCheckedIn,
-                                              )),
+                                      ...locations.asMap().entries.map((entry) {
+                                        int index = entry.key;
+                                        var location = entry.value;
+                                        var correspondingLocation =
+                                            locations1[index];
+                                        final detail = correspondingLocation
+                                                .getDetailByLanguage(1) ??
+                                            correspondingLocation
+                                                .childGetDiaDiemByMonAns.first;
+                                        return RestaurantItem(
+                                          name: detail.tenDiaDiem,
+                                          soNha:
+                                              correspondingLocation.soNha ?? '',
+                                          duongPho: detail.duongPho,
+                                          hasCheckedIn: location.isCheckedIn,
+                                          location: correspondingLocation,
+                                          monAnId: location.monAnID,
+                                          chuongTrinhId: location.chuongTrinhID,
+                                          quanAnId: location.quanAnID,
+                                        );
+                                      }),
                                     ],
                                   ),
                                 );
@@ -358,39 +384,6 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                   }),
                 ),
               ],
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: ElevatedButton(
-              onPressed: () {
-                Get.to(() => FakeCameraScreen(chuongTrinhId: 1, monAnId: 1));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.location_on, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    'Đã check in',
-                    style: TextStyle(
-                      fontFamily: 'Mulish',
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
@@ -421,6 +414,10 @@ class RestaurantItem extends StatelessWidget {
   final String soNha;
   final String duongPho;
   final bool hasCheckedIn;
+  final LocationModel location;
+  final int monAnId;
+  final int chuongTrinhId;
+  final int quanAnId;
 
   const RestaurantItem({
     super.key,
@@ -428,6 +425,10 @@ class RestaurantItem extends StatelessWidget {
     required this.soNha,
     required this.duongPho,
     required this.hasCheckedIn,
+    required this.location,
+    required this.monAnId,
+    required this.chuongTrinhId,
+    required this.quanAnId,
   });
 
   @override
@@ -437,53 +438,107 @@ class RestaurantItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(width: 8), // Khoảng cách bên trái
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontFamily: 'Mulish',
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      Icons.location_pin,
-                      color: Colors.red,
-                      size: 16, // Giảm kích thước để phù hợp hơn
-                    ),
-                    const SizedBox(
-                        width: 4), // Khoảng cách giữa icon và địa chỉ
                     Expanded(
-                      child: Text(
-                        '$soNha $duongPho',
-                        style: const TextStyle(
-                          fontFamily: 'Mulish',
-                          fontSize: 14,
+                      child: InkWell(
+                        onTap: () {
+                          Get.to(() => RestaurantDetailScreen(
+                                restaurant: location,
+                                monAnId: monAnId,
+                                chuongTrinhId: chuongTrinhId,
+                                isCheckedIn: hasCheckedIn,
+                              ));
+                        },
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            fontFamily: 'Mulish',
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
+                    if (!hasCheckedIn)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Get.toNamed('/fake-camera', parameters: {
+                              'monAnId': monAnId.toString(),
+                              'diadiemId': quanAnId.toString(),
+                              'chuongTrinhId': chuongTrinhId.toString(),
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00C853),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(100, 30),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          child: const Text(
+                            'Check-in',
+                            style: TextStyle(
+                              fontFamily: 'Mulish',
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (hasCheckedIn)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF00C853),
+                          size: 20,
+                        ),
+                      ),
                   ],
+                ),
+                InkWell(
+                  onTap: () {
+                    Get.to(() => RestaurantDetailScreen(
+                          restaurant: location,
+                          monAnId: monAnId,
+                          chuongTrinhId: chuongTrinhId,
+                          isCheckedIn: hasCheckedIn,
+                        ));
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.location_pin,
+                        color: Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '$soNha $duongPho',
+                          style: const TextStyle(
+                            fontFamily: 'Mulish',
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          if (hasCheckedIn)
-            const Padding(
-              padding: EdgeInsets.only(
-                  left: 8), // Khoảng cách giữa thông tin và icon
-              child: Icon(
-                Icons.check_circle,
-                color: Color(0xFF00C853),
-                size: 20,
-              ),
-            ),
         ],
       ),
     );

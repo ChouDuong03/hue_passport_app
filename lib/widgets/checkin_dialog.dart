@@ -4,7 +4,7 @@ import 'package:hue_passport_app/widgets/showcheckin_dialog.dart';
 
 void showCheckinDialog(
   BuildContext context, {
-  required int monAnId,
+  required int diadiemId,
   required int chuongTrinhId,
   required double viDo,
   required double kinhDo,
@@ -45,8 +45,8 @@ void showCheckinDialog(
                 child: ElevatedButton(
                   onPressed: () async {
                     final result =
-                        await ApiCheckinFoodService.postCheckinMultipart(
-                      monAnId: monAnId,
+                        await ApiCheckinFoodService.postCheckinDiaDiem(
+                      diaDiemId: diadiemId,
                       chuongTrinhId: chuongTrinhId,
                       viDo: viDo,
                       kinhDo: kinhDo,

@@ -5,11 +5,13 @@ import 'package:hue_passport_app/widgets/checkin_dialog.dart';
 
 class FakeCameraScreen extends StatelessWidget {
   final int monAnId;
+  final int diadiemId;
   final int chuongTrinhId;
 
   FakeCameraScreen({
     Key? key,
     required this.monAnId,
+    required this.diadiemId,
     required this.chuongTrinhId,
   }) : super(key: key);
 
@@ -40,10 +42,10 @@ class FakeCameraScreen extends StatelessWidget {
                         onTap: () {
                           showCheckinDialog(
                             context,
-                            monAnId: 1,
-                            chuongTrinhId: 2,
-                            viDo: 16.4637,
-                            kinhDo: 107.5909,
+                            diadiemId: diadiemId,
+                            chuongTrinhId: chuongTrinhId,
+                            viDo: 2,
+                            kinhDo: 3,
                           );
                         },
                         child: Container(

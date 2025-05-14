@@ -15,6 +15,8 @@ class DishListScreen extends StatefulWidget {
   State<DishListScreen> createState() => _DishListScreenState();
 }
 
+final baseUrl = "https://localhost:51512";
+
 class _DishListScreenState extends State<DishListScreen> {
   bool _isPressed = false;
 
@@ -111,9 +113,10 @@ class _DishListScreenState extends State<DishListScreen> {
                                         const SizedBox(width: 8),
                                         // Ảnh đại diện
                                         CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage: AssetImage(
-                                              'assets/images/${dish.anhDaiDien}'),
+                                          radius: 12,
+                                          backgroundImage: NetworkImage(
+                                              "$baseUrl${dish.anhDaiDien}" // Không thêm dấu `/` nữa nếu chuỗi đã có
+                                              ),
                                         ),
                                         const SizedBox(width: 8),
                                         // Tên món ăn và nút Check-in

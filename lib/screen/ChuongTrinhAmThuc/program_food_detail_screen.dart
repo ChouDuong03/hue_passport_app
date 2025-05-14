@@ -5,7 +5,7 @@ import 'package:hue_passport_app/controller/program_food_controller.dart';
 class ProgramDetailScreen extends StatelessWidget {
   final int programId;
   final controller = Get.find<ProgramFoodController>();
-
+  final baseUrl = "https://localhost:51512";
   ProgramDetailScreen({required this.programId}) {
     // Kiểm tra nếu chương trình chi tiết đã có trong cache rồi mới gọi API
     if (!controller.programDetailsCache.containsKey(programId)) {
@@ -32,8 +32,8 @@ class ProgramDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                'assets/images/${detail.anhDaiDien}',
+              Image.network(
+                "$baseUrl${detail.anhDaiDien}",
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),

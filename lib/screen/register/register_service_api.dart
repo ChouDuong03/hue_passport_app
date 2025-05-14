@@ -15,7 +15,7 @@ class RegisterApiService {
     required int tinhThanhID,
   }) async {
     final response = await http.post(
-      Uri.parse('https://localhost:58586/api/Accounts/DangKy'),
+      Uri.parse('https://localhost:51512/api/Accounts/DangKy'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'hoTen': hoTen,

@@ -9,7 +9,7 @@ class ProgramCardWidget extends StatelessWidget {
   final int currentPage;
   final int totalPages;
   final controller = Get.find<ProgramFoodController>();
-
+  final baseUrl = "https://localhost:51512";
   ProgramCardWidget({
     super.key,
     required this.program,
@@ -139,8 +139,8 @@ class ProgramCardWidget extends StatelessWidget {
                     final dish = dishes[index];
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        'assets/images/${dish.anhDaiDien}',
+                      child: Image.network(
+                        "$baseUrl${dish.anhDaiDien}",
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
@@ -179,8 +179,8 @@ class ProgramCardWidget extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/images/$imageAsset',
+            child: Image.network(
+              "$baseUrl$imageAsset",
               fit: BoxFit.cover,
             ),
           ),

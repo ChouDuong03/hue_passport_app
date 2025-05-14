@@ -13,10 +13,10 @@ import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl = 'https://localhost:58586/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://localhost:58586/api/MonAns';
-  static const thongKeBaseUrl = 'https://localhost:58586/api/ThongKes';
-  static const danhSachQuanAn = 'https://localhost:58586/api/DiaDiemMonAns';
+  static const baseUrl = 'https://localhost:51512/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://localhost:51512/api/MonAns';
+  static const thongKeBaseUrl = 'https://localhost:51512/api/ThongKes';
+  static const danhSachQuanAn = 'https://localhost:51512/api/DiaDiemMonAns';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
@@ -88,7 +88,17 @@ class ProgramFoodApiService {
         .toList();
   }
 
-  Future<List<LocationModel>> fetchLocationsByDish(int dishId) async {
+  Future<LocationModel> fetchLocationDetail(int locationId) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('$danhSachQuanAn/GetDiaDiemChiTiet/$locationId'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final data = await _handleResponse(response);
+    return LocationModel.fromJson(data);
+  }
+
+  /* Future<List<LocationModel>> fetchLocationsByDish(int dishId) async {
     final token = await _getToken();
     final response = await http.get(
       Uri.parse('$danhSachQuanAn/GetDanhSachDiaDiemByMonAn/$dishId'),
@@ -102,13 +112,40 @@ class ProgramFoodApiService {
         .map((e) => LocationModel.fromJson(e))
         .where((location) => location.ngonNguID == targetLanguageId)
         .toList();
+  }*/
+
+  Future<List<LocationModel>> fetchLocationsByDish(int dishId) async {
+    final locations2 = await fetchLocationsByDish2(dishId);
+    if (locations2.isEmpty) {
+      return [];
+    }
+
+    final List<LocationModel> locations = [];
+    String currentLanguage = Get.locale?.languageCode ?? 'vi';
+    int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
+
+    for (var location2 in locations2) {
+      try {
+        final locationDetail = await fetchLocationDetail(location2.quanAnID);
+        if (locationDetail.childGetDiaDiemByMonAns
+            .any((detail) => detail.ngonNguID == targetLanguageId)) {
+          locations.add(locationDetail);
+        }
+      } catch (e) {
+        print(
+            'Error fetching location detail for quanAnID ${location2.quanAnID}: $e');
+        continue;
+      }
+    }
+
+    return locations;
   }
 
   Future<List<LocationModel2>> fetchLocationsByDish2(int dishId) async {
     final token = await _getToken();
     final response = await http.get(
       Uri.parse(
-          'https://localhost:58586/api/Accounts/lichsu-checkin?monAnID=$dishId'),
+          'https://localhost:51512/api/Accounts/lichsu-checkin?monAnID=$dishId'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -136,6 +173,16 @@ class ProgramFoodApiService {
     final token = await _getToken();
     final response = await http.get(
       Uri.parse('$danhSachQuanAn/DemSoDiaDiemCheckin'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final data = await _handleResponse(response);
+    return data['count'] as int;
+  }
+
+  Future<int> fetchCheckInFoodCount() async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse('https://localhost:51512/api/MonAns/DemSoMonAnCheckin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
