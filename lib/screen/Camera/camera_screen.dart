@@ -42,6 +42,7 @@ class FakeCameraScreen extends StatelessWidget {
                         onTap: () {
                           showCheckinDialog(
                             context,
+                            monAnId: monAnId,
                             diadiemId: diadiemId,
                             chuongTrinhId: chuongTrinhId,
                             viDo: 2,

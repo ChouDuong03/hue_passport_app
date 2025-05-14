@@ -466,36 +466,7 @@ class RestaurantItem extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (!hasCheckedIn)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Get.toNamed('/fake-camera', parameters: {
-                              'monAnId': monAnId.toString(),
-                              'diadiemId': quanAnId.toString(),
-                              'chuongTrinhId': chuongTrinhId.toString(),
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00C853),
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(100, 30),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          child: const Text(
-                            'Check-in',
-                            style: TextStyle(
-                              fontFamily: 'Mulish',
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (hasCheckedIn)
+                    if (hasCheckedIn == true)
                       const Padding(
                         padding: EdgeInsets.only(left: 8),
                         child: Icon(
@@ -540,64 +511,6 @@ class RestaurantItem extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class CheckInPlaceholderScreen extends StatelessWidget {
-  final DishModel dish;
-
-  const CheckInPlaceholderScreen({super.key, required this.dish});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Check-in'),
-        backgroundColor: const Color(0xFF00C853),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Trang Check-in cho món: ${dish.tenMon}',
-              style: const TextStyle(
-                fontFamily: 'Mulish',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Đây là placeholder. Bạn có thể phát triển chức năng check-in tại đây.',
-              style: TextStyle(
-                fontFamily: 'Mulish',
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Get.back(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C853),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              child: const Text(
-                'Quay lại',
-                style: TextStyle(
-                  fontFamily: 'Mulish',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
