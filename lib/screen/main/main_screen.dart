@@ -6,18 +6,12 @@ import 'package:hue_passport_app/screen/login/login_screen.dart';
 import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:hue_passport_app/screen/program/program_screen.dart';
 import 'package:hue_passport_app/screen/person/person_screen.dart';
+import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/screen/setting/setting_screen.dart';
 
 class MainScreen extends StatelessWidget {
   final NavController navController = Get.put(NavController());
   final SecureStorageService storageService = SecureStorageService();
-
-  final List<Widget> screens = [
-    ProgramListScreen(),
-    ProgramScreen(),
-    PersonScreen(chuongTrinhID: 1),
-    SettingScreen(),
-  ];
 
   MainScreen({super.key}) {
     _checkLoginStatus();
@@ -33,6 +27,15 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final currentChuongTrinhID = navController.currentChuongTrinhID.value;
+
+      final List<Widget> screens = [
+        ProgramListScreen(),
+        ProgramScreen(),
+        PersonScreen(chuongTrinhID: currentChuongTrinhID),
+        SettingScreen(),
+      ];
+
       return Scaffold(
         body: IndexedStack(
           index: navController.selectedIndex.value,

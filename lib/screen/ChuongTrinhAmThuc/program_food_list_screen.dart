@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 
 class ProgramListScreen extends StatelessWidget {
   final controller = Get.put(ProgramFoodController());
+  final navController = Get.find<NavController>();
   final PageController _pageController = PageController();
   final baseUrl = "https://localhost:51512";
   ProgramListScreen({super.key});
@@ -92,6 +94,12 @@ class ProgramListScreen extends StatelessWidget {
                           child: PageView.builder(
                             controller: _pageController,
                             itemCount: controller.programs.length,
+                            onPageChanged: (index) {
+                              // Cập nhật chuongTrinhID hiện tại lên NavController
+                              final id =
+                                  controller.programs[index].chuongTrinhID;
+                              navController.updateChuongTrinhID(id);
+                            },
                             itemBuilder: (context, index) {
                               final program = controller.programs[index];
                               return ProgramCardWidget(

@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/register', page: () => RegisterScreen()),
         GetPage(name: '/home', page: () => HomeScreen()),
         GetPage(name: '/program', page: () => ProgramScreen()),
-        GetPage(name: '/person', page: () => PersonScreen(chuongTrinhID: 1)),
+        GetPage(name: '/person', page: () => PersonScreen()),
         GetPage(name: '/setting', page: () => SettingScreen()),
         GetPage(name: '/main', page: () => MainScreen()),
         GetPage(name: '/foodprogram', page: () => ProgramListScreen()),

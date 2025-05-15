@@ -11,7 +11,9 @@ import 'package:hue_passport_app/controller/nav_controller.dart';
 class PersonScreen extends StatelessWidget {
   final int chuongTrinhID;
 
-  const PersonScreen({super.key, required this.chuongTrinhID});
+  const PersonScreen({Key? key, int? chuongTrinhID})
+      : chuongTrinhID = chuongTrinhID ?? 1,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
