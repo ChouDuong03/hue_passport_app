@@ -29,7 +29,9 @@ class LocationModel2 {
       duongPho: json['duongPho'] as String,
       ngonNguID: json['ngonNguID'] as int,
       ten: json['ten'] as String,
-      isCheckedIn: json['isCheckedIn'] == 1, // Chuyển 1/0 thành true/false
+      isCheckedIn: json['isCheckedIn'] == true ||
+          json['isCheckedIn'] == 1 ||
+          json['isCheckedIn'] == 'true', // Chuyển 1/0 thành true/false
     );
   }
 

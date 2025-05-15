@@ -6,6 +6,7 @@ import 'package:hue_passport_app/models/dish_model.dart';
 import 'package:hue_passport_app/models/location_model.dart';
 import 'package:hue_passport_app/models/location_model_2.dart';
 import 'package:hue_passport_app/screen/Camera/camera_screen.dart';
+import 'package:hue_passport_app/widgets/checkin_button.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/restaurant_detail_screen.dart';
 
 class DishDetailScreen extends StatefulWidget {
@@ -106,6 +107,11 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                     }
 
                     final childDetail = detail.childMonAnChiTiets.first;
+                    final locations = widget
+                            .controller.locationsCache2[widget.dish.id ?? 1] ??
+                        [];
+                    bool hasCheckedInAnyLocation =
+                        locations.any((loc) => loc.isCheckedIn);
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,6 +327,52 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 16),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 16),
+                                        child: CheckInButton(
+                                          isCheckedIn: hasCheckedInAnyLocation,
+                                          onTap: () {
+                                            if (hasCheckedInAnyLocation) return;
+
+                                            // Tìm địa điểm đầu tiên chưa check-in
+                                            final firstUncheckInLocation =
+                                                locations.isNotEmpty
+                                                    ? locations.firstWhere(
+                                                        (loc) =>
+                                                            !loc.isCheckedIn,
+                                                        orElse: () =>
+                                                            locations.first,
+                                                      )
+                                                    : null;
+
+                                            if (firstUncheckInLocation ==
+                                                null) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                      'Không có địa điểm nào để check-in.'),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            Get.to(() => FakeCameraScreen(
+                                                  monAnId:
+                                                      firstUncheckInLocation
+                                                          .monAnID,
+                                                  diadiemId:
+                                                      firstUncheckInLocation
+                                                          .quanAnID,
+                                                  chuongTrinhId:
+                                                      firstUncheckInLocation
+                                                          .chuongTrinhID,
+                                                ));
+                                          },
+                                        ),
+                                      ),
                                     ],
                                   ],
                                 ),
@@ -466,7 +518,7 @@ class RestaurantItem extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (hasCheckedIn == true)
+                    if (hasCheckedIn)
                       const Padding(
                         padding: EdgeInsets.only(left: 8),
                         child: Icon(
