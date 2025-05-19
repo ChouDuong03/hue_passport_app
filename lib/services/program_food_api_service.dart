@@ -13,10 +13,13 @@ import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl = 'https://localhost:51512/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://localhost:51512/api/MonAns';
-  static const thongKeBaseUrl = 'https://localhost:51512/api/ThongKes';
-  static const danhSachQuanAn = 'https://localhost:51512/api/DiaDiemMonAns';
+  static const baseUrl =
+      'https://hochieudulichv2.huecit.com/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://hochieudulichv2.huecit.com/api/MonAns';
+  static const thongKeBaseUrl =
+      'https://hochieudulichv2.huecit.com/api/ThongKes';
+  static const danhSachQuanAn =
+      'https://hochieudulichv2.huecit.com/api/DiaDiemMonAns';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
@@ -145,7 +148,7 @@ class ProgramFoodApiService {
     final token = await _getToken();
     final response = await http.get(
       Uri.parse(
-          'https://localhost:51512/api/Accounts/lichsu-checkin?monAnID=$dishId'),
+          'https://hochieudulichv2.huecit.com/api/Accounts/lichsu-checkin?monAnID=$dishId'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -182,7 +185,8 @@ class ProgramFoodApiService {
   Future<int> fetchCheckInFoodCount() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:51512/api/MonAns/DemSoMonAnCheckin'),
+      Uri.parse(
+          'https://hochieudulichv2.huecit.com/api/MonAns/DemSoMonAnCheckin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);

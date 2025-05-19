@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/home_controller.dart';
-import 'package:hue_passport_app/widgets/visitor_list_view.dart';
 import 'package:intl/intl.dart';
 import 'package:hue_passport_app/widgets/custom_alert.dart';
 
@@ -440,7 +439,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  VisitorListView(), // <-- Thêm dòng này
+                  // <-- Thêm dòng này
                   const SizedBox(height: 80),
                 ],
               ),

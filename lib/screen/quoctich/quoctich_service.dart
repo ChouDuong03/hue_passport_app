@@ -3,10 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:hue_passport_app/screen/quoctich/quoctich_model.dart';
 
 class NationalityApi {
-  static const String baseUrl = 'https://localhost:51512/API';
-
   static Future<List<Nationality>> fetchNationalities() async {
-    final response = await http.get(Uri.parse('$baseUrl/QuocTich/Gets'));
+    final response = await http
+        .get(Uri.parse('https://hochieudulichv2.huecit.com/API/QuocTich/Gets'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

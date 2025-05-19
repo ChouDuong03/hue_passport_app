@@ -112,7 +112,6 @@ class ProgramListScreen extends StatelessWidget {
                         );
                       }),
 
-                      // Phần "Top người dùng check-in được đặt ở đây" (hàng dọc)
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
@@ -120,7 +119,7 @@ class ProgramListScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Top người dùng check-in được đặt ở đây',
+                              'Top du khách check in gần đây',
                               style: TextStyle(
                                 fontFamily: 'Mulish',
                                 fontWeight: FontWeight.bold,

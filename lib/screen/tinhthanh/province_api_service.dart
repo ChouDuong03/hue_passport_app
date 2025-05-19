@@ -3,11 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:hue_passport_app/screen/tinhthanh/province_model.dart';
 
 class ProvinceApiService {
-  static const String baseUrl = 'https://localhost:51512/api';
-
   // Lấy danh sách tỉnh thành
   static Future<List<Province>> fetchProvinces() async {
-    final response = await http.get(Uri.parse('$baseUrl/DiaPhuongs/Gets'));
+    final response = await http.get(
+        Uri.parse('https://hochieudulichv2.huecit.com/api/DiaPhuongs/Gets'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -24,7 +23,8 @@ class ProvinceApiService {
     required String provinceID,
   }) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/Accounts/update-tinhthanh-dukhach'),
+      Uri.parse(
+          'https://hochieudulichv2.huecit.com/api/Accounts/update-tinhthanh-dukhach'),
       headers: {
         'Content-Type': 'application/json',
       },
