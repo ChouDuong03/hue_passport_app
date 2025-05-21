@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/models/location_model.dart';
+import 'package:hue_passport_app/models/review_response.dart';
 import 'package:hue_passport_app/screen/Camera/camera_screen.dart';
+import 'package:hue_passport_app/widgets/showcheckin_dialog.dart';
+import 'package:hue_passport_app/services/program_food_api_service.dart';
 
 class RestaurantDetailScreen extends StatelessWidget {
   final LocationModel restaurant;
   final int monAnId;
   final int chuongTrinhId;
   final bool isCheckedIn;
-  final baseUrl = "https://localhost:51512";
+
   const RestaurantDetailScreen({
     super.key,
     required this.restaurant,
@@ -105,7 +108,7 @@ class RestaurantDetailScreen extends StatelessWidget {
               width: double.infinity,
               child: ClipRRect(
                 child: Image.network(
-                  "$baseUrl${restaurant.anhDaiDien}",
+                  "${restaurant.anhDaiDien}",
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,
@@ -203,8 +206,13 @@ class RestaurantDetailScreen extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      Get.snackbar(
-                          'Thông báo', 'Chức năng đánh giá đang phát triển!');
+                      showCheckinSuccessDialog(
+                        context,
+                        chuongTrinhId: chuongTrinhId,
+                        quanAnId: restaurant.id,
+                        monAnId: monAnId,
+                        ngonNguId: 1,
+                      );
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF00C853)),
@@ -223,6 +231,89 @@ class RestaurantDetailScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Review về quán',
+              style: TextStyle(
+                fontFamily: 'Mulish',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            FutureBuilder<List<ReviewModel2>>(
+              future:
+                  ProgramFoodApiService().fetchReviewsByLocation(restaurant.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Text('Không thể tải đánh giá.');
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text('Chưa có đánh giá nào.');
+                }
+
+                final reviews = snapshot.data!;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: reviews.length,
+                  itemBuilder: (context, index) {
+                    final review = reviews[index];
+                    final userName = review.hoTen.isNotEmpty
+                        ? review.hoTen
+                        : 'Người dùng ẩn danh';
+                    final date =
+                        review.ngayDanhGia.toLocal().toString().split(' ')[0];
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 15),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                userName,
+                                style: const TextStyle(
+                                  fontFamily: 'Mulish',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                date,
+                                style: const TextStyle(
+                                  fontFamily: 'Mulish',
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            review.noiDungDanhGia,
+                            style: const TextStyle(
+                              fontFamily: 'Mulish',
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),

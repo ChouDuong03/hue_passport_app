@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hue_passport_app/services/program_food_api_service.dart';
+import 'package:hue_passport_app/models/review_model.dart';
 
-void showCheckinSuccessDialog(BuildContext context) {
+void showCheckinSuccessDialog(
+  BuildContext context, {
+  required int chuongTrinhId,
+  required int quanAnId,
+  required int monAnId,
+  required int ngonNguId,
+}) {
   final TextEditingController reviewController = TextEditingController();
+  final ProgramFoodApiService apiService = ProgramFoodApiService();
 
   showDialog(
     context: context,
@@ -42,34 +51,64 @@ void showCheckinSuccessDialog(BuildContext context) {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () {
-                    // Gửi review ở đây nếu cần
-                    Navigator.of(context).pop(); // đóng dialog
+                  onPressed: () async {
+                    if (reviewController.text.isNotEmpty) {
+                      final review = ReviewModel(
+                        chuongTrinhID: chuongTrinhId,
+                        quanAnID: quanAnId,
+                        monAnID: monAnId,
+                        ngonNguID: ngonNguId,
+                        noiDungDanhGia: reviewController.text,
+                      );
+                      final success =
+                          await apiService.postReviewDiaDiem(review);
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Gửi đánh giá thành công!'),
+                            backgroundColor: Color(0xFF05D48A),
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Gửi đánh giá thất bại!'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Vui lòng nhập đánh giá!'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor:
-                        const Color(0xFF05D48A), // Màu chữ (màu trắng)
+                    backgroundColor: const Color(0xFF05D48A),
                   ),
                   child: const Text("Gửi Review"),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Gửi review ở đây nếu cần
-                    Navigator.of(context).pop(); // đóng dialog
+                    Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.grey, // Màu chữ
-                    backgroundColor: Colors.white, // Màu nền
+                    foregroundColor: Colors.grey,
+                    backgroundColor: Colors.white,
                     side: const BorderSide(
-                      color: Colors.grey, // Màu viền
-                      width: 2, // Độ rộng viền
+                      color: Colors.grey,
+                      width: 2,
                     ),
                   ),
                   child: const Text("Bỏ qua"),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

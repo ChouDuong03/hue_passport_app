@@ -15,7 +15,8 @@ class RegisterApiService {
     required int tinhThanhID,
   }) async {
     final response = await http.post(
-      Uri.parse('https://hochieudulichv2.huecit.com/api/Accounts/DangKy'),
+      // Uri.parse('https://hochieudulichv2.huecit.com/api/Accounts/DangKy'),
+      Uri.parse('https://localhost:54450/api/Accounts/DangKy'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'hoTen': hoTen,

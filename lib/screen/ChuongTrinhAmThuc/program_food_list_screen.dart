@@ -9,7 +9,7 @@ class ProgramListScreen extends StatelessWidget {
   final controller = Get.put(ProgramFoodController());
   final navController = Get.find<NavController>();
   final PageController _pageController = PageController();
-  final baseUrl = "https://localhost:51512";
+
   ProgramListScreen({super.key});
 
   // Dữ liệu giả cho danh sách chương trình ẩm thực
@@ -161,8 +161,8 @@ class ProgramListScreen extends StatelessWidget {
                                         const SizedBox(width: 8),
                                         CircleAvatar(
                                           radius: 12,
-                                          backgroundImage: NetworkImage(
-                                              "$baseUrl/${user.anhDaiDien}"),
+                                          backgroundImage:
+                                              NetworkImage(user.anhDaiDien),
                                         ),
                                         const SizedBox(width: 8),
                                         Expanded(

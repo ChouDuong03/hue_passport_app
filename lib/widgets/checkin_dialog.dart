@@ -105,7 +105,15 @@ void showCheckinDialog(
                                 if (diaDiemResult.success &&
                                     multipartResult.success) {
                                   Navigator.of(context).pop();
-                                  showCheckinSuccessDialog(context);
+                                  showCheckinSuccessDialog(
+                                    context,
+                                    chuongTrinhId: chuongTrinhId,
+                                    quanAnId:
+                                        diadiemId, // Sử dụng diadiemId làm quanAnId
+                                    monAnId: monAnId,
+                                    ngonNguId:
+                                        1, // Giả sử ngonNguId là 1 (Tiếng Việt), có thể động hóa nếu cần
+                                  );
                                 }
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(

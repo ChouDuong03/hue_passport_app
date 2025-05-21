@@ -229,8 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
             provinces: provinces,
             onConfirm: (selectedProvince) async {
               try {
-                await ProvinceApiService.updateProvince(
-                  passportNumber: passportController.text.trim(),
+                await ProvinceApiService().updateProvince(
                   provinceID: selectedProvince.id.toString(),
                 );
                 _showMessage(

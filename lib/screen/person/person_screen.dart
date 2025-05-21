@@ -151,6 +151,7 @@ class PersonScreen extends StatelessWidget {
                           );
 
                           return ProgramProgressCard(
+                            chuongTrinhID: chuongTrinhID,
                             title: program.tenChuongTrinh,
                             progress: progress,
                             time: time,

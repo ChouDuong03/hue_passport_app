@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/models/program_progess.dart';
 import 'package:hue_passport_app/models/program_time.dart';
-import 'package:confetti/confetti.dart';
+import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:intl/intl.dart';
 
 class ProgramProgressCard extends StatefulWidget {
   final String title;
   final ProgramProgress progress;
   final ProgramTime time;
+  final int chuongTrinhID; // chuongTrinhID là int
 
   const ProgramProgressCard({
     super.key,
     required this.title,
     required this.progress,
     required this.time,
+    required this.chuongTrinhID,
   });
 
   @override
@@ -41,7 +43,7 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
       setState(() {
         _hasShownPopup = true;
       });
-      showCongratulationPopup(context, widget.title);
+      showCongratulationPopup(context, widget.title, widget.chuongTrinhID);
     }
   }
 
@@ -50,7 +52,7 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
     final tienDoParts = widget.progress.tienDo.split('/');
     final completed = int.parse(tienDoParts[0]);
     final total = int.parse(tienDoParts[1]);
-    final milestones = _generateMilestones(total);
+    final milestones = _generateMilestones(widget.progress.listMocHanhTrinh);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -110,11 +112,17 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
           const SizedBox(height: 16),
           _buildCheckInText(completed, total),
           if (widget.progress.isFinished)
-            _buildStatusMessage('Chúc mừng! Bạn đã hoàn thành chương trình!',
-                Colors.green, Icons.check_circle),
+            _buildStatusMessage(
+              'Chúc mừng! Bạn đã hoàn thành chương trình!',
+              Colors.green,
+              Icons.check_circle,
+            ),
           if (widget.time.isExpired)
             _buildStatusMessage(
-                'Chương trình đã hết hạn!', Colors.red, Icons.warning),
+              'Chương trình đã quá hạn',
+              Colors.red,
+              Icons.warning,
+            ),
         ],
       ),
     );
@@ -208,25 +216,25 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
 
   Widget _buildStatusMessage(String message, Color color, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: 8),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(width: 8),
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 6),
             Expanded(
               child: Text(
                 message,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontFamily: 'Mulish',
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: color,
                 ),
               ),
@@ -237,24 +245,29 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
     );
   }
 
-  List<int> _generateMilestones(int total) {
-    if (total <= 0) return [1];
+  List<int> _generateMilestones(List<int> listMocHanhTrinh) {
+    if (listMocHanhTrinh == null || listMocHanhTrinh.isEmpty) {
+      int total = int.parse(widget.progress.tienDo.split('/')[1]);
+      if (total <= 0) return [1];
 
-    List<int> milestones = [1];
+      List<int> milestones = [1];
 
-    if (total > 2) {
-      int middleCount = total >= 10 ? 2 : (total >= 5 ? 1 : 0);
-      double step = (total - 1) / (middleCount + 1);
-      for (int i = 1; i <= middleCount; i++) {
-        milestones.add((1 + (i * step)).round());
+      if (total > 2) {
+        int middleCount = total >= 10 ? 2 : (total >= 5 ? 1 : 0);
+        double step = (total - 1) / (middleCount + 1);
+        for (int i = 1; i <= middleCount; i++) {
+          milestones.add((1 + (i * step)).round());
+        }
       }
-    }
 
-    if (total != 1) {
-      milestones.add(total);
-    }
+      if (total != 1) {
+        milestones.add(total);
+      }
 
-    return milestones.toSet().toList()..sort();
+      return milestones.toSet().toList()..sort();
+    } else {
+      return listMocHanhTrinh.toSet().toList()..sort();
+    }
   }
 
   Widget _buildStepCircle(int current, int total, bool completed) {
@@ -339,174 +352,253 @@ class ProgressLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// Định nghĩa CongratulationPopup (đã thu nhỏ)
 class CongratulationPopup extends StatefulWidget {
   final String message;
-  final VoidCallback onConfirm;
-  final VoidCallback onDismiss;
+  final int chuongTrinhID; // Đổi từ String sang int
+  final ProgramFoodApiService apiService;
 
   const CongratulationPopup({
     super.key,
     required this.message,
-    required this.onConfirm,
-    required this.onDismiss,
+    required this.chuongTrinhID,
+    required this.apiService,
   });
 
   @override
   _CongratulationPopupState createState() => _CongratulationPopupState();
 }
 
-class _CongratulationPopupState extends State<CongratulationPopup> {
-  late ConfettiController _confettiController;
+class _CongratulationPopupState extends State<CongratulationPopup>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 3));
-    _confettiController.play();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _checkConfirmationStatus();
   }
 
   @override
   void dispose() {
-    _confettiController.dispose();
+    _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkConfirmationStatus() async {
+    try {
+      final isConfirmed =
+          await widget.apiService.checkConfirmationStatus(widget.chuongTrinhID);
+      if (isConfirmed) {
+        Get.back();
+      }
+    } catch (e) {
+      print('Error checking confirmation status: $e');
+    }
+  }
+
+  Future<void> _confirmReward() async {
+    setState(() => _isLoading = true);
+    try {
+      final result =
+          await widget.apiService.confirmReward(widget.chuongTrinhID);
+      if (result['isSuccessed']) {
+        Get.back();
+        Get.snackbar('Thành công', 'Bạn đã nhận thưởng!',
+            snackPosition: SnackPosition.TOP);
+      } else {
+        Get.snackbar('Lỗi',
+            result['message'] ?? 'Không thể nhận thưởng. Vui lòng thử lại!',
+            snackPosition: SnackPosition.TOP);
+      }
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Đã có lỗi xảy ra. Vui lòng thử lại!',
+          snackPosition: SnackPosition.TOP);
+    }
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Giảm độ cong để gọn hơn
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        padding: const EdgeInsets.all(12), // Giảm padding
-        width: MediaQuery.of(context).size.width * 0.75, // Thu nhỏ chiều rộng
+        padding: const EdgeInsets.all(16),
+        width: MediaQuery.of(context).size.width * 0.8,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.2),
+              blurRadius: 10,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Stack(
           children: [
-            // Hiệu ứng confetti
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirection: 3.14 / 2,
-                emissionFrequency: 0.05,
-                numberOfParticles: 30, // Giảm số lượng hạt để gọn hơn
-                gravity: 0.2,
-                colors: const [
-                  Colors.red,
-                  Colors.blue,
-                  Colors.yellow,
-                  Colors.green,
-                  Colors.purple,
-                ],
-                blastDirectionality: BlastDirectionality.explosive,
-                shouldLoop: false,
-              ),
-            ),
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Banner "CHÚC MỪNG" nằm trên cùng
-                Stack(
-                  children: [
-                    Container(
-                      height: 50, // Giảm chiều cao banner
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/chucmung.png'),
-                          fit: BoxFit.fitWidth,
-                        ),
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(12)),
+                Container(
+                  height: 50,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.blue, Colors.lightBlueAccent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'CHÚC MỪNG',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Mulish',
                       ),
                     ),
-                    Positioned(
-                      right: 4, // Giảm khoảng cách nút đóng
-                      top: 4,
-                      child: IconButton(
-                        icon: const Icon(Icons.close,
-                            color: Colors.white,
-                            size: 20), // Giảm kích thước icon
-                        onPressed: () => Get.back(),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 20),
+                    onPressed: () => Get.back(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AnimatedBuilder(
+                  animation: _scaleAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Image.asset(
+                        'assets/images/present.png',
+                        width: 80,
+                        height: 80,
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: Icon(Icons.star,
-                              color: Colors.yellow,
-                              size: 20), // Giảm kích thước sao
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(right: 8),
-                          child:
-                              Icon(Icons.star, color: Colors.yellow, size: 20),
-                        ),
-                      ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 12), // Giảm khoảng cách
-                // Hình ảnh hộp quà
-                Image.asset(
-                  'assets/images/present.png',
-                  width: 60, // Thu nhỏ kích thước hộp quà
-                  height: 60,
-                ),
-                const SizedBox(height: 12), // Giảm khoảng cách
-                // Văn bản chúc mừng
+                const SizedBox(height: 16),
                 Text(
                   widget.message,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 14, // Giảm kích thước chữ
-                    color: Colors.blue,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                    fontFamily: 'Mulish',
                   ),
                 ),
-                const SizedBox(height: 4), // Giảm khoảng cách
+                const SizedBox(height: 8),
                 const Text(
-                  'Bạn đã hoàn thành chương trình đề xuất thưởng.',
+                  'Bạn đã hoàn thành chương trình đề xuất thưởng!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12, // Giảm kích thước chữ
+                    fontSize: 14,
                     color: Colors.green,
+                    fontFamily: 'Mulish',
                   ),
                 ),
-                const SizedBox(height: 12), // Giảm khoảng cách
-                // Hai nút "Xác nhận" và "Bỏ qua"
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                const SizedBox(height: 16),
+                Column(
                   children: [
                     ElevatedButton(
-                      onPressed: widget.onConfirm,
+                      onPressed: _isLoading ? null : _confirmReward,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6), // Giảm padding nút
+                            horizontal: 24, vertical: 12),
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ).copyWith(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.transparent),
+                        overlayColor: MaterialStateProperty.all(
+                            Colors.green.withOpacity(0.2)),
                       ),
-                      child: const Text('Xác nhận',
-                          style: TextStyle(fontSize: 14, color: Colors.white)),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.green, Colors.lightGreen],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 12),
+                              child: const Text(
+                                'Xác nhận',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Mulish',
+                                ),
+                              ),
+                            ),
                     ),
+                    const SizedBox(height: 8),
                     TextButton(
-                      onPressed: widget.onDismiss,
+                      onPressed: _isLoading ? null : () => Get.back(),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6), // Giảm padding nút
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Colors.grey, width: 1),
+                        ),
                       ),
-                      child: const Text('Bỏ qua',
-                          style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      child: const Text(
+                        'Bỏ qua',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          fontFamily: 'Mulish',
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -519,18 +611,22 @@ class _CongratulationPopupState extends State<CongratulationPopup> {
   }
 }
 
-void showCongratulationPopup(BuildContext context, String programTitle) {
-  Get.dialog(
-    CongratulationPopup(
-      message:
-          'Bạn đã check in đủ các món ăn trong chương trình "$programTitle".',
-      onConfirm: () {
-        Get.back();
-        Get.snackbar('Thành công', 'Bạn đã xác nhận!');
-      },
-      onDismiss: () {
-        Get.back();
-      },
-    ),
-  );
+Future<void> showCongratulationPopup(
+    BuildContext context, String programTitle, int chuongTrinhID) async {
+  final apiService = ProgramFoodApiService();
+  try {
+    final isConfirmed = await apiService.checkConfirmationStatus(chuongTrinhID);
+    if (!isConfirmed) {
+      Get.dialog(
+        CongratulationPopup(
+          message:
+              'Bạn đã check in đủ các món ăn trong chương trình "$programTitle".',
+          chuongTrinhID: chuongTrinhID,
+          apiService: apiService,
+        ),
+      );
+    }
+  } catch (e) {
+    print('Error checking confirmation status: $e');
+  }
 }
