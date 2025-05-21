@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
+import 'package:hue_passport_app/models/experiencestat_model.dart';
+import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 
@@ -12,42 +14,65 @@ class ProgramListScreen extends StatelessWidget {
 
   ProgramListScreen({super.key});
 
-  // Dữ liệu giả cho danh sách chương trình ẩm thực
-  final List<Map<String, dynamic>> foodTours = [
-    {
-      'rank': 1,
-      'name': 'Lê Phước Lương',
-      'location': 'Huế Food Tour',
-      'checkIns': 20,
-    },
-    {
-      'rank': 2,
-      'name': 'Nguyễn Ngọc Đông',
-      'location': 'Huế Food Tour',
-      'checkIns': 19,
-    },
-    {
-      'rank': 3,
-      'name': 'Jack Jinson',
-      'location': 'Huế Food Tour',
-      'checkIns': 19,
-    },
-    {
-      'rank': 4,
-      'name': 'Kofi Davila',
-      'location': 'Huế Food Tour',
-      'checkIns': 18,
-    },
-    {
-      'rank': 5,
-      'name': 'Nakita Michiko',
-      'location': 'Huế Food Tour',
-      'checkIns': 17,
-    },
-  ];
+  // Hàm hiển thị dialog chọn chương trình
+  void _showProgramSelectionDialog(
+      BuildContext context, RxInt selectedChuongTrinhID) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Chọn chương trình',
+            style: TextStyle(
+              fontFamily: 'Mulish',
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (controller.programs.isEmpty) {
+              return const Text('Không có chương trình nào.');
+            }
+
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: controller.programs.map((program) {
+                  return ListTile(
+                    title: Text(
+                      program.tenChuongTrinh,
+                      style: const TextStyle(fontFamily: 'Mulish'),
+                    ),
+                    onTap: () {
+                      selectedChuongTrinhID.value = program.chuongTrinhID;
+                      Get.back(); // Đóng dialog
+                    },
+                  );
+                }).toList(),
+              ),
+            );
+          }),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text(
+                'Hủy',
+                style: TextStyle(fontFamily: 'Mulish', color: Colors.grey),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Biến để lưu chuongTrinhID được chọn, mặc định là chương trình đầu tiên
+    final selectedChuongTrinhID = 1.obs; // Bắt đầu với ID 1
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Stack(
@@ -171,14 +196,14 @@ class ProgramListScreen extends StatelessWidget {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                user.hoTen, // Hiển thị tên quán
+                                                user.hoTen,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
                                                 ),
                                               ),
                                               Text(
-                                                user.tenQuan, // Giả định địa điểm
+                                                user.tenQuan,
                                                 style: const TextStyle(
                                                   color: Colors.grey,
                                                   fontSize: 12,
@@ -197,73 +222,123 @@ class ProgramListScreen extends StatelessWidget {
                         ),
                       ),
 
-                      // Phần "Huế Food Tour: Trải nghiệm Ẩm thực Huế 1 ngày"
+                      // Phần hiển thị thống kê điểm kinh nghiệm
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Huế Food Tour: Trải nghiệm Ẩm thực Huế 1 ngày',
-                              style: TextStyle(
-                                fontFamily: 'Mulish',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Thống kê điểm kinh nghiệm',
+                                  style: TextStyle(
+                                    fontFamily: 'Mulish',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => _showProgramSelectionDialog(
+                                      context, selectedChuongTrinhID),
+                                  child: const Text(
+                                    'Chọn chương trình',
+                                    style: TextStyle(
+                                      fontFamily: 'Mulish',
+                                      color: Colors.blue,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 8),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: foodTours.length,
-                              itemBuilder: (context, index) {
-                                final tour = foodTours[index];
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        '${tour['rank']}.',
-                                        style: const TextStyle(
-                                          fontFamily: 'Mulish',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                            Obx(() {
+                              return FutureBuilder<List<ExperienceStatsModel>>(
+                                future: ProgramFoodApiService()
+                                    .fetchExperienceStats(
+                                        selectedChuongTrinhID.value),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError) {
+                                    return const Text(
+                                        'Không thể tải thống kê điểm kinh nghiệm.');
+                                  }
+                                  if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Text(
+                                        'Không có dữ liệu điểm kinh nghiệm.');
+                                  }
+
+                                  final stats = snapshot.data!;
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: stats.length,
+                                    itemBuilder: (context, index) {
+                                      final stat = stats[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8),
+                                        child: Row(
                                           children: [
                                             Text(
-                                              tour['name'],
+                                              '${index + 1}.',
                                               style: const TextStyle(
                                                 fontFamily: 'Mulish',
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 14,
                                               ),
                                             ),
-                                            Text(
-                                              '${tour['location']} • kinh nghiệm: ${tour['checkIns']}',
-                                              style: const TextStyle(
-                                                fontFamily: 'Mulish',
-                                                color: Colors.grey,
-                                                fontSize: 12,
+                                            const SizedBox(width: 8),
+                                            CircleAvatar(
+                                              radius: 12,
+                                              backgroundImage:
+                                                  NetworkImage(stat.anhDaiDien),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    stat.hoTen,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'Mulish',
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Kinh nghiệm: ${stat.diemKinhNghiem}',
+                                                    style: const TextStyle(
+                                                      fontFamily: 'Mulish',
+                                                      color: Colors.red,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
+                                            const Icon(Icons.arrow_forward_ios,
+                                                size: 16, color: Colors.grey),
                                           ],
                                         ),
-                                      ),
-                                      const Icon(Icons.arrow_forward_ios,
-                                          size: 16, color: Colors.grey),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -282,22 +357,20 @@ class ProgramListScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Thêm hành động khi nhấn nút (ví dụ: điều hướng đến màn hình chi tiết)
                     final currentIndex = _pageController.page?.round() ?? 0;
                     if (controller.programs.isNotEmpty) {
                       final chuongTrinhID =
                           controller.programs[currentIndex].chuongTrinhID;
                       Get.to(
                           () => DishListScreen(chuongTrinhID: chuongTrinhID));
-                    } // Ví dụ: điều hướng đến màn hình chi tiết
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00C853), // Màu xanh lục
-                    foregroundColor: Colors.white, // Màu chữ trắng
-                    minimumSize: const Size(double.infinity,
-                        50), // Chiều rộng toàn màn hình, chiều cao 50
+                    backgroundColor: const Color(0xFF00C853),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25), // Bo góc
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
                   child: const Text(
@@ -311,7 +384,6 @@ class ProgramListScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Avatar + tiêu đề nằm trên ảnh nền
             const Positioned(
               top: 30,
               left: 16,
@@ -332,7 +404,7 @@ class ProgramListScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 40), // Để cân layout
+                  SizedBox(width: 40),
                 ],
               ),
             ),

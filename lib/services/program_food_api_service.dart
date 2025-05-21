@@ -11,6 +11,7 @@ import 'package:hue_passport_app/models/program_time.dart';
 import 'package:hue_passport_app/models/top_checkin_user_model.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/review_response.dart';
+import 'package:hue_passport_app/models/experiencestat_model.dart';
 import 'package:hue_passport_app/models/review_model.dart'; // Import file mới
 import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:get/get.dart';
@@ -316,5 +317,24 @@ class ProgramFoodApiService {
     }
 
     return reviewResponse.resultObj;
+  }
+
+  Future<List<ExperienceStatsModel>> fetchExperienceStats(
+      int chuongTrinhID) async {
+    final token = await _getToken();
+    final response = await http.get(
+      Uri.parse(
+          '$thongKeBaseUrl/ThongKeDiemKinhNghiem?chuongTrinhID=$chuongTrinhID'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+
+    final data = await _handleResponse(response);
+    final statsResponse = ExperienceStatsResponse.fromJson(data);
+
+    if (!statsResponse.isSuccessed) {
+      throw Exception(statsResponse.message);
+    }
+
+    return statsResponse.resultObj;
   }
 }
