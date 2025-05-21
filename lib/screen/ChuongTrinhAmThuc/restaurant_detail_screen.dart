@@ -205,27 +205,34 @@ class RestaurantDetailScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {
-                      showCheckinSuccessDialog(
-                        context,
-                        chuongTrinhId: chuongTrinhId,
-                        quanAnId: restaurant.id,
-                        monAnId: monAnId,
-                        ngonNguId: 1,
-                      );
-                    },
+                    onPressed: isCheckedIn
+                        ? () {
+                            showCheckinSuccessDialog(
+                              context,
+                              chuongTrinhId: chuongTrinhId,
+                              quanAnId: restaurant.id,
+                              monAnId: monAnId,
+                              ngonNguId: 1,
+                            );
+                          }
+                        : null, // Vô hiệu hóa khi chưa check-in
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF00C853)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
+                      backgroundColor: isCheckedIn
+                          ? null
+                          : Colors.grey[300], // Màu xám khi disabled
+                      foregroundColor: isCheckedIn
+                          ? const Color(0xFF00C853)
+                          : Colors.grey, // Màu chữ xám khi disabled
                     ),
                     child: const Text(
                       'Đánh giá và review',
                       style: TextStyle(
                         fontFamily: 'Mulish',
                         fontSize: 14,
-                        color: Color(0xFF00C853),
                       ),
                     ),
                   ),
