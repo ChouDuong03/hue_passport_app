@@ -15,8 +15,8 @@ class ProgramListScreen extends StatelessWidget {
   ProgramListScreen({super.key});
 
   // Hàm hiển thị dialog chọn chương trình
-  void _showProgramSelectionDialog(
-      BuildContext context, RxInt selectedChuongTrinhID) {
+  void _showProgramSelectionDialog(BuildContext context,
+      RxInt selectedChuongTrinhID, RxString selectedProgramName) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -47,6 +47,8 @@ class ProgramListScreen extends StatelessWidget {
                     ),
                     onTap: () {
                       selectedChuongTrinhID.value = program.chuongTrinhID;
+                      selectedProgramName.value =
+                          program.tenChuongTrinh; // Cập nhật tên chương trình
                       Get.back(); // Đóng dialog
                     },
                   );
@@ -70,8 +72,20 @@ class ProgramListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Biến để lưu chuongTrinhID được chọn, mặc định là chương trình đầu tiên
+    // Biến để lưu chuongTrinhID và tên chương trình được chọn
     final selectedChuongTrinhID = 1.obs; // Bắt đầu với ID 1
+    final selectedProgramName =
+        'Huế Food Tour: Trải nghiệm Ẩm thực Huế 1 ngày'.obs; // Giá trị mặc định
+
+    // Cập nhật tên chương trình mặc định dựa trên ID ban đầu
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialProgram = controller.programs.firstWhere(
+        (program) => program.chuongTrinhID == selectedChuongTrinhID.value,
+      );
+      if (initialProgram != null) {
+        selectedProgramName.value = initialProgram.tenChuongTrinh;
+      }
+    });
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -232,24 +246,29 @@ class ProgramListScreen extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Thống kê điểm kinh nghiệm',
-                                  style: TextStyle(
-                                    fontFamily: 'Mulish',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
+                                Obx(() => Flexible(
+                                      child: Text(
+                                        selectedProgramName.value,
+                                        style: const TextStyle(
+                                          fontFamily: 'Mulish',
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                        overflow: TextOverflow
+                                            .ellipsis, // Cắt ngắn nếu tên quá dài
+                                      ),
+                                    )),
                                 TextButton(
                                   onPressed: () => _showProgramSelectionDialog(
-                                      context, selectedChuongTrinhID),
-                                  child: const Text(
-                                    'Chọn chương trình',
-                                    style: TextStyle(
-                                      fontFamily: 'Mulish',
-                                      color: Colors.blue,
-                                      fontSize: 14,
-                                    ),
+                                      context,
+                                      selectedChuongTrinhID,
+                                      selectedProgramName),
+                                  child: const Icon(
+                                    Icons
+                                        .more_vert, // Thay bằng icon ba chấm hàng dọc
+                                    color: Colors.grey,
+                                    size:
+                                        20, // Điều chỉnh kích thước icon nếu cần
                                   ),
                                 ),
                               ],
