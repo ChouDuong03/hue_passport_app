@@ -32,7 +32,17 @@ class ProgramFoodApiService {
   final SecureStorageService storageService = SecureStorageService();
 
   Future<String?> _getToken() async {
-    return await storageService.getAccessToken();
+    final token = await storageService.getAccessToken();
+    if (token == null) {
+      // Thử refresh token (nếu đã triển khai)
+      final newToken = await storageService.refreshAccessToken();
+      if (newToken != null) {
+        return newToken;
+      }
+
+      return null; // Không có token hợp lệ
+    }
+    return token;
   }
 
   static Future<Map<String, dynamic>> _handleResponse(
@@ -247,6 +257,21 @@ class ProgramFoodApiService {
     return ProgramTime.fromJson(data);
   }
 
+  Future<Map<String, dynamic>> confirmReward(int chuongTrinhID) async {
+    final token = await _getToken();
+    final response = await http.post(
+      Uri.parse(
+          'https://localhost:54450/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+
+    final data = await _handleResponse(response);
+    return {
+      'isSuccessed': data['isSuccessed'] as bool,
+      // Thêm resultObj để sử dụng sau nếu cần
+    };
+  }
+
   // API kiểm tra trạng thái xác nhận/hủy bỏ
   Future<bool> checkConfirmationStatus(int chuongTrinhID) async {
     final token = await _getToken();
@@ -259,18 +284,6 @@ class ProgramFoodApiService {
   }
 
   // API xử lý khi bấm "Xác nhận"
-  Future<Map<String, dynamic>> confirmReward(int chuongTrinhID) async {
-    final token = await _getToken();
-    final response = await http.get(
-      Uri.parse('$nhanQuaBaseUrl/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
-      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
-    );
-    final data = await _handleResponse(response);
-    return {
-      'isSuccessed': data['isSuccessed'] as bool,
-      'message': data['message'] as String,
-    };
-  }
 
   // API gửi review địa điểm sử dụng ReviewModel
   Future<bool> postReviewDiaDiem(ReviewModel review) async {
