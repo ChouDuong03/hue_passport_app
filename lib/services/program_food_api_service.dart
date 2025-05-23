@@ -12,8 +12,9 @@ import 'package:hue_passport_app/models/top_checkin_user_model.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/review_response.dart';
 import 'package:hue_passport_app/models/experiencestat_model.dart';
-import 'package:hue_passport_app/models/review_model.dart'; // Import file mới
+import 'package:hue_passport_app/models/review_model.dart';
 import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
+import 'package:hue_passport_app/models/user_info_model.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
@@ -32,15 +33,10 @@ class ProgramFoodApiService {
   final SecureStorageService storageService = SecureStorageService();
 
   Future<String?> _getToken() async {
-    final token = await storageService.getAccessToken();
+    String? token = await storageService.getAccessToken();
     if (token == null) {
-      // Thử refresh token (nếu đã triển khai)
-      final newToken = await storageService.refreshAccessToken();
-      if (newToken != null) {
-        return newToken;
-      }
-
-      return null; // Không có token hợp lệ
+      // Attempt to refresh token
+      token = await storageService.refreshAccessToken();
     }
     return token;
   }
@@ -272,7 +268,6 @@ class ProgramFoodApiService {
     };
   }
 
-  // API kiểm tra trạng thái xác nhận/hủy bỏ
   Future<bool> checkConfirmationStatus(int chuongTrinhID) async {
     final token = await _getToken();
     final response = await http.get(
@@ -283,9 +278,6 @@ class ProgramFoodApiService {
     return data['isSuccessed'] as bool;
   }
 
-  // API xử lý khi bấm "Xác nhận"
-
-  // API gửi review địa điểm sử dụng ReviewModel
   Future<bool> postReviewDiaDiem(ReviewModel review) async {
     const String reviewUrl = '$danhSachQuanAn/ReViewDiaDiem';
     final token = await _getToken();
@@ -324,7 +316,6 @@ class ProgramFoodApiService {
     final data = await _handleResponse(response);
     final reviewResponse = ReviewResponse.fromJson(data);
 
-    // Kiểm tra isSuccessed trước khi trả về
     if (!reviewResponse.isSuccessed) {
       throw Exception(reviewResponse.message);
     }
@@ -350,4 +341,55 @@ class ProgramFoodApiService {
 
     return statsResponse.resultObj;
   }
+
+  Future<UserInfoModel> getUserInfo() async {
+    final token = await _getToken();
+    final url = Uri.parse('https://localhost:54450/API/UserInfo');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+
+    final data = await _handleResponse(response);
+    if (data['isSuccessed']) {
+      return UserInfoModel.fromJson(data['resultObj']);
+    } else {
+      throw Exception(data['message'] ?? 'Lấy thông tin người dùng thất bại');
+    }
+  }
+
+  Future<bool> updateUserInfo({
+    required String hoTen,
+    required int gioiTinh,
+    required String ngaySinh,
+    required int quocTich,
+    String diaChi = '',
+    String soDienThoai = '',
+  }) async {
+    final token = await _getToken();
+    final url = Uri.parse('https://localhost:54450/API/User/ChinhSua');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'hoTen': hoTen,
+        'gioiTinh': gioiTinh,
+        'ngaySinh': ngaySinh,
+        'quocTich': quocTich,
+        'diaChi': diaChi,
+        'soDienThoai': soDienThoai,
+      }),
+    );
+
+    final data = await _handleResponse(response);
+    return data['isSuccessed'] as bool;
+  }
+
+  // Remove redundant refreshToken method since it's handled by SecureStorageService
 }

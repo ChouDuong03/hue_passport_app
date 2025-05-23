@@ -1,4 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SecureStorageService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -22,21 +24,19 @@ class SecureStorageService {
   Future<String?> getAccessToken() async {
     try {
       final token = await _storage.read(key: 'accessToken');
-      if (token == null) {
-      } else {}
       return token;
     } catch (e) {
-      return null; // Trả về null nếu có lỗi
+      print('Error getting access token: $e');
+      return null;
     }
   }
 
   Future<String?> getRefreshToken() async {
     try {
       final token = await _storage.read(key: 'refreshToken');
-      if (token == null) {
-      } else {}
       return token;
     } catch (e) {
+      print('Error getting refresh token: $e');
       return null;
     }
   }
@@ -49,14 +49,45 @@ class SecureStorageService {
     }
   }
 
-  // (Tùy chọn) Phương thức refresh token (nếu cần tích hợp sau)
   Future<String?> refreshAccessToken() async {
     final refreshToken = await getRefreshToken();
     if (refreshToken == null) {
+      print('No refresh token available');
       return null;
     }
-    // TODO: Gọi API refresh token từ server và lưu access token mới
-    // Ví dụ: await _callRefreshApi(refreshToken);
-    return null; // Placeholder, cần triển khai API thực tế
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://localhost:54450/API/RefreshToken'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'accessToken': await getAccessToken() ?? '',
+          'refreshToken': refreshToken,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final newAccessToken = data['accessToken'] as String?;
+        final newRefreshToken = data['refreshToken'] as String?;
+
+        if (newAccessToken != null) {
+          await saveAccessToken(newAccessToken);
+        }
+        if (newRefreshToken != null) {
+          await saveRefreshToken(newRefreshToken);
+        }
+
+        print('Token refreshed successfully');
+        return newAccessToken;
+      } else {
+        print(
+            'Token refresh failed: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error refreshing token: $e');
+      return null;
+    }
   }
 }

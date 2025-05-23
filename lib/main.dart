@@ -5,6 +5,8 @@ import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/program_food_list_scre
 import 'package:hue_passport_app/screen/home/home_screen.dart';
 import 'package:hue_passport_app/screen/main/main_screen.dart';
 import 'package:hue_passport_app/screen/register/register_screen.dart';
+import 'package:hue_passport_app/screen/setting/edit_profile_screen.dart';
+import 'package:hue_passport_app/screen/setting/profile_screen.dart';
 import 'screen/splash/splash_screen.dart';
 import 'screen/onboarding/onboarding_screen.dart';
 import 'screen/login/login_screen.dart';
@@ -33,6 +35,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/setting', page: () => SettingScreen()),
         GetPage(name: '/main', page: () => MainScreen()),
         GetPage(name: '/foodprogram', page: () => ProgramListScreen()),
+        GetPage(name: '/profilescreen', page: () => ProfileScreen()),
+        GetPage(name: '/editprofilescreen', page: () => EditProfileScreen()),
       ],
     );
   }
