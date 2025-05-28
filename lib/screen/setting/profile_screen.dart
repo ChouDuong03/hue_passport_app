@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     backgroundImage: hoChieu.anhDaiDien != null &&
                             hoChieu.anhDaiDien!.isNotEmpty
                         ? NetworkImage(
-                            'https://localhost:54450${hoChieu.anhDaiDien}')
+                            'https://localhost:52126${hoChieu.anhDaiDien}')
                         : const AssetImage('assets/images/useravatar.png')
                             as ImageProvider,
                     onBackgroundImageError: (exception, stackTrace) {

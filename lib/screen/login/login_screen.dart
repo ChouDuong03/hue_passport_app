@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextField(
                                 controller: passportController,
                                 decoration: InputDecoration(
-                                  hintText: 'Mã hộ chiếu',
+                                  hintText: 'Mã hộ chiếu/Email',
                                   prefixIcon: const Icon(Icons.credit_card),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(30),

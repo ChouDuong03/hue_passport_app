@@ -136,7 +136,7 @@ class _DishListScreenState extends State<DishListScreen> {
                                           backgroundImage: dish
                                                   .anhDaiDien.isNotEmpty
                                               ? NetworkImage(
-                                                  'https://localhost:54450${dish.anhDaiDien}')
+                                                  'https://localhost:52126${dish.anhDaiDien}')
                                               : const AssetImage(
                                                       'assets/images/default_image.png')
                                                   as ImageProvider,

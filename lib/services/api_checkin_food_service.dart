@@ -19,7 +19,7 @@ class ApiCheckinFoodService {
     required double viDo,
     required double kinhDo,
   }) async {
-    const String apiUrl = "https://localhost:54450/api/MonAns/CheckIn";
+    const String apiUrl = "https://localhost:52126/api/MonAns/CheckIn";
     final token = await _getToken();
 
     try {
@@ -58,7 +58,7 @@ class ApiCheckinFoodService {
     required double kinhDo,
   }) async {
     // const String apiUrl ="https://hochieudulichv2.huecit.com/api/DiaDiemMonAns/CheckIn";
-    const String apiUrl = "https://localhost:54450/api/DiaDiemMonAns/CheckIn";
+    const String apiUrl = "https://localhost:52126/api/DiaDiemMonAns/CheckIn";
     final token = await _getToken();
 
     try {

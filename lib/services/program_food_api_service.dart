@@ -18,12 +18,12 @@ import 'package:hue_passport_app/models/user_info_model.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl = 'https://localhost:54450/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://localhost:54450/api/MonAns';
-  static const thongKeBaseUrl = 'https://localhost:54450/api/ThongKes';
-  static const danhSachQuanAn = 'https://localhost:54450/api/DiaDiemMonAns';
+  static const baseUrl = 'https://localhost:52126/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://localhost:52126/api/MonAns';
+  static const thongKeBaseUrl = 'https://localhost:52126/api/ThongKes';
+  static const danhSachQuanAn = 'https://localhost:52126/api/DiaDiemMonAns';
   static const nhanQuaBaseUrl =
-      'https://localhost:54450/api/ho-chieu-hanh-khach/NhanQua';
+      'https://localhost:52126/api/ho-chieu-hanh-khach/NhanQua';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
@@ -114,7 +114,7 @@ class ProgramFoodApiService {
   Future<List<DishModel2>> fetchDishesByProgram2(int chuongTrinhID) async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:54450/api/Accounts/get-lichsu-checkin'),
+      Uri.parse('https://localhost:52126/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -129,10 +129,11 @@ class ProgramFoodApiService {
         .toList();
   }
 
-  Future<List<TopCheckInUserModel>> fetchTop5CheckInUsers() async {
+  Future<List<TopCheckInUserModel>> fetchTop5CheckInUsers(
+      {int pageSize = 5}) async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('$thongKeBaseUrl/ThongKeTopCheckIn'),
+      Uri.parse('$thongKeBaseUrl/ThongKeTopCheckIn?pageSize=$pageSize'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -185,7 +186,7 @@ class ProgramFoodApiService {
   Future<List<LocationModel2>> fetchLocationsByDish2(int dishId) async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:54450/api/Accounts/get-lichsu-checkin'),
+      Uri.parse('https://localhost:52126/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -224,7 +225,7 @@ class ProgramFoodApiService {
   Future<int> fetchCheckInFoodCount() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:54450/api/MonAns/DemSoMonAnCheckin'),
+      Uri.parse('https://localhost:52126/api/MonAns/DemSoMonAnCheckin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -257,7 +258,7 @@ class ProgramFoodApiService {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse(
-          'https://localhost:54450/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
+          'https://localhost:52126/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
 
@@ -344,7 +345,7 @@ class ProgramFoodApiService {
 
   Future<UserInfoModel> getUserInfo() async {
     final token = await _getToken();
-    final url = Uri.parse('https://localhost:54450/API/UserInfo');
+    final url = Uri.parse('https://localhost:52126/API/UserInfo');
     final response = await http.post(
       url,
       headers: {
@@ -370,7 +371,7 @@ class ProgramFoodApiService {
     String soDienThoai = '',
   }) async {
     final token = await _getToken();
-    final url = Uri.parse('https://localhost:54450/API/User/ChinhSua');
+    final url = Uri.parse('https://localhost:52126/API/User/ChinhSua');
     final response = await http.post(
       url,
       headers: {
