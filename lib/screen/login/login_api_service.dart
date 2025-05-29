@@ -11,8 +11,8 @@ class LoginApiService {
     required String password,
   }) async {
     final response = await http.post(
-      // Uri.parse('https://hochieudulichv2.huecit.com/api/Accounts/DangNhap'),
-      Uri.parse('https://localhost:52126/api/Accounts/DangNhap'),
+      // Uri.parse('https://localhost:50529/api/Accounts/DangNhap'),
+      Uri.parse('https://localhost:50529/api/Accounts/DangNhap'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'TaiKhoan': passportNumber,

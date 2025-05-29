@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
-import 'package:hue_passport_app/models/experiencestat_model.dart';
-import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
+import 'package:hue_passport_app/widgets/ranking_item_widget.dart'; // Add this import
 
 class ProgramListScreen extends StatelessWidget {
   final controller = Get.put(ProgramFoodController());
@@ -47,9 +46,9 @@ class ProgramListScreen extends StatelessWidget {
                     ),
                     onTap: () {
                       selectedChuongTrinhID.value = program.chuongTrinhID;
-                      selectedProgramName.value =
-                          program.tenChuongTrinh; // Cập nhật tên chương trình
-                      Get.back(); // Đóng dialog
+                      selectedProgramName.value = program.tenChuongTrinh;
+                      controller.updateSelectedProgram(program.chuongTrinhID);
+                      Get.back();
                     },
                   );
                 }).toList(),
@@ -72,18 +71,27 @@ class ProgramListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Biến để lưu chuongTrinhID và tên chương trình được chọn
-    final selectedChuongTrinhID = 1.obs; // Bắt đầu với ID 1
-    final selectedProgramName =
-        'Huế Food Tour: Trải nghiệm Ẩm thực Huế 1 ngày'.obs; // Giá trị mặc định
+    final selectedChuongTrinhID =
+        0.obs; // Start with 0, will be updated dynamically
+    final selectedProgramName = ''.obs;
 
-    // Cập nhật tên chương trình mặc định dựa trên ID ban đầu
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Sync with controller's selectedChuongTrinhID
+    ever(controller.selectedChuongTrinhID, (id) {
+      selectedChuongTrinhID.value = id;
+      final program =
+          controller.programs.firstWhere((p) => p.chuongTrinhID == id);
       final initialProgram = controller.programs.firstWhere(
         (program) => program.chuongTrinhID == selectedChuongTrinhID.value,
       );
-      if (initialProgram != null) {
-        selectedProgramName.value = initialProgram.tenChuongTrinh;
+      selectedProgramName.value = program.tenChuongTrinh;
+    });
+
+    // Initial sync
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.programs.isNotEmpty &&
+          controller.selectedChuongTrinhID.value == 0) {
+        controller
+            .updateSelectedProgram(controller.programs.first.chuongTrinhID);
       }
     });
 
@@ -106,7 +114,7 @@ class ProgramListScreen extends StatelessWidget {
             // Nội dung chính
             Column(
               children: [
-                const SizedBox(height: 90), // để tránh che mất avatar + tiêu đề
+                const SizedBox(height: 90),
                 Container(
                   padding: const EdgeInsets.only(top: 12),
                   decoration: const BoxDecoration(
@@ -134,10 +142,10 @@ class ProgramListScreen extends StatelessWidget {
                             controller: _pageController,
                             itemCount: controller.programs.length,
                             onPageChanged: (index) {
-                              // Cập nhật chuongTrinhID hiện tại lên NavController
                               final id =
                                   controller.programs[index].chuongTrinhID;
                               navController.updateChuongTrinhID(id);
+                              controller.updateSelectedProgram(id);
                             },
                             itemBuilder: (context, index) {
                               final program = controller.programs[index];
@@ -151,92 +159,7 @@ class ProgramListScreen extends StatelessWidget {
                         );
                       }),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Top du khách check in gần đây',
-                              style: TextStyle(
-                                fontFamily: 'Mulish',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Obx(() {
-                              if (controller.isLoadingTopUsers.value) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
-                              if (controller.topCheckInUsers.isEmpty) {
-                                return const Center(
-                                    child:
-                                        Text('Không có dữ liệu top check-in.'));
-                              }
-
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: controller.topCheckInUsers.length > 5
-                                    ? 5
-                                    : controller.topCheckInUsers.length,
-                                itemBuilder: (context, index) {
-                                  final user =
-                                      controller.topCheckInUsers[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          '${index + 1}.',
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        CircleAvatar(
-                                          radius: 12,
-                                          backgroundImage:
-                                              NetworkImage(user.anhDaiDien),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                user.hoTen,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              Text(
-                                                user.tenQuan,
-                                                style: const TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-
-                      // Phần hiển thị thống kê điểm kinh nghiệm
+                      // Phần hiển thị bảng xếp hạng
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
@@ -254,8 +177,7 @@ class ProgramListScreen extends StatelessWidget {
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
-                                        overflow: TextOverflow
-                                            .ellipsis, // Cắt ngắn nếu tên quá dài
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     )),
                                 TextButton(
@@ -264,96 +186,36 @@ class ProgramListScreen extends StatelessWidget {
                                       selectedChuongTrinhID,
                                       selectedProgramName),
                                   child: const Icon(
-                                    Icons
-                                        .more_vert, // Thay bằng icon ba chấm hàng dọc
+                                    Icons.more_vert,
                                     color: Colors.grey,
-                                    size:
-                                        20, // Điều chỉnh kích thước icon nếu cần
+                                    size: 20,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 8),
                             Obx(() {
-                              return FutureBuilder<List<ExperienceStatsModel>>(
-                                future: ProgramFoodApiService()
-                                    .fetchExperienceStats(
-                                        selectedChuongTrinhID.value),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  }
-                                  if (snapshot.hasError) {
-                                    return const Text(
-                                        'Không thể tải thống kê điểm kinh nghiệm.');
-                                  }
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.isEmpty) {
-                                    return const Text(
-                                        'Không có dữ liệu điểm kinh nghiệm.');
-                                  }
+                              if (controller.isLoadingRankings.value) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              if (controller.rankings.isEmpty) {
+                                return const Center(
+                                    child: Text('Không có dữ liệu xếp hạng.'));
+                              }
 
-                                  final stats = snapshot.data!;
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: stats.length,
-                                    itemBuilder: (context, index) {
-                                      final stat = stats[index];
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              '${index + 1}.',
-                                              style: const TextStyle(
-                                                fontFamily: 'Mulish',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            CircleAvatar(
-                                              radius: 12,
-                                              backgroundImage:
-                                                  NetworkImage(stat.anhDaiDien),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    stat.hoTen,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'Mulish',
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'Kinh nghiệm: ${stat.diemKinhNghiem}',
-                                                    style: const TextStyle(
-                                                      fontFamily: 'Mulish',
-                                                      color: Colors.red,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const Icon(Icons.arrow_forward_ios,
-                                                size: 16, color: Colors.grey),
-                                          ],
-                                        ),
-                                      );
-                                    },
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: controller.rankings.length > 10
+                                    ? 10
+                                    : controller
+                                        .rankings.length, // Limit to top 10
+                                itemBuilder: (context, index) {
+                                  final user = controller.rankings[index];
+                                  return RankingItemWidget(
+                                    user: user,
+                                    index: index,
                                   );
                                 },
                               );
@@ -368,6 +230,8 @@ class ProgramListScreen extends StatelessWidget {
                 ),
               ],
             ),
+
+            // Nút "Xem chi tiết"
             Positioned(
               left: 16,
               right: 16,
@@ -403,6 +267,8 @@ class ProgramListScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Header với avatar và tiêu đề
             const Positioned(
               top: 30,
               left: 16,

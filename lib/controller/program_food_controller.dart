@@ -4,6 +4,7 @@ import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/location_model_2.dart';
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
+import 'package:hue_passport_app/models/ranking_model.dart';
 import 'package:hue_passport_app/models/top_checkin_user_model.dart';
 import 'package:hue_passport_app/models/location_model.dart';
 import 'package:hue_passport_app/services/program_food_api_service.dart';
@@ -16,14 +17,19 @@ class ProgramFoodController extends GetxController {
   var topCheckInUsers = <TopCheckInUserModel>[].obs;
   var locationsCache = <int, List<LocationModel>>{}.obs;
   var locationsCache2 = <int, List<LocationModel2>>{}.obs; // Cache theo dishId
+  var rankings = <RankingModel>[].obs;
   var isLoading = false.obs;
   var isLoadingDetail = false.obs;
   var isLoadingDishes = false.obs;
   var isLoadingTopUsers = false.obs;
   var isLoadingDishDetail = false.obs;
   var isLoadingLocations = false.obs;
+  var isLoadingRankings = false.obs;
   final expandedProgramIds = <int>{}.obs;
 
+  final expandedMaHoChieu = <String>{}.obs;
+
+  var selectedChuongTrinhID = 0.obs;
   // Khởi tạo instance của ProgramFoodApiService
   final ProgramFoodApiService apiService = ProgramFoodApiService();
 
@@ -35,10 +41,20 @@ class ProgramFoodController extends GetxController {
     }
   }
 
+  void toggleExpandedMHC(String maHoChieu) {
+    if (expandedMaHoChieu.contains(maHoChieu)) {
+      expandedMaHoChieu.remove(maHoChieu);
+    } else {
+      expandedMaHoChieu.add(maHoChieu);
+    }
+  }
+
   @override
   void onInit() {
     fetchPrograms();
+    fetchRankings(1);
     fetchTop5CheckInUsers();
+
     super.onInit();
   }
 
@@ -161,5 +177,28 @@ class ProgramFoodController extends GetxController {
     } finally {
       isLoadingLocations.value = false;
     }
+  }
+
+  Future<void> fetchRankings(int chuongTrinhID) async {
+    isLoadingRankings.value = true;
+    try {
+      final fetchedRankings = await apiService.fetchRankings(chuongTrinhID);
+      if (fetchedRankings.isNotEmpty) {
+        rankings.assignAll(fetchedRankings);
+      } else {
+        throw Exception('Không tìm thấy danh sách xếp hạng');
+      }
+    } catch (e) {
+      Get.snackbar('Lỗi', 'Không thể tải bảng xếp hạng: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoadingRankings.value = false;
+    }
+  }
+
+  // Method to update selectedChuongTrinhID and fetch rankings
+  void updateSelectedProgram(int chuongTrinhID) {
+    selectedChuongTrinhID.value = chuongTrinhID;
+    fetchRankings(chuongTrinhID);
   }
 }

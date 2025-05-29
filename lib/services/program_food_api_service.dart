@@ -13,17 +13,18 @@ import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/review_response.dart';
 import 'package:hue_passport_app/models/experiencestat_model.dart';
 import 'package:hue_passport_app/models/review_model.dart';
+import 'package:hue_passport_app/models/ranking_model.dart';
 import 'package:hue_passport_app/screen/login/secure_storage_service.dart';
 import 'package:hue_passport_app/models/user_info_model.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl = 'https://localhost:52126/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://localhost:52126/api/MonAns';
-  static const thongKeBaseUrl = 'https://localhost:52126/api/ThongKes';
-  static const danhSachQuanAn = 'https://localhost:52126/api/DiaDiemMonAns';
+  static const baseUrl = 'https://localhost:50529/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'https://localhost:50529/api/MonAns';
+  static const thongKeBaseUrl = 'https://localhost:50529/api/ThongKes';
+  static const danhSachQuanAn = 'https://localhost:50529/api/DiaDiemMonAns';
   static const nhanQuaBaseUrl =
-      'https://localhost:52126/api/ho-chieu-hanh-khach/NhanQua';
+      'https://localhost:50529/api/ho-chieu-hanh-khach/NhanQua';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
@@ -114,7 +115,7 @@ class ProgramFoodApiService {
   Future<List<DishModel2>> fetchDishesByProgram2(int chuongTrinhID) async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:52126/api/Accounts/get-lichsu-checkin'),
+      Uri.parse('https://localhost:50529/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -186,7 +187,7 @@ class ProgramFoodApiService {
   Future<List<LocationModel2>> fetchLocationsByDish2(int dishId) async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:52126/api/Accounts/get-lichsu-checkin'),
+      Uri.parse('https://localhost:50529/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -225,7 +226,7 @@ class ProgramFoodApiService {
   Future<int> fetchCheckInFoodCount() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('https://localhost:52126/api/MonAns/DemSoMonAnCheckin'),
+      Uri.parse('https://localhost:50529/api/MonAns/DemSoMonAnCheckin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -258,7 +259,7 @@ class ProgramFoodApiService {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse(
-          'https://localhost:52126/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
+          'https://localhost:50529/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
 
@@ -345,7 +346,7 @@ class ProgramFoodApiService {
 
   Future<UserInfoModel> getUserInfo() async {
     final token = await _getToken();
-    final url = Uri.parse('https://localhost:52126/API/UserInfo');
+    final url = Uri.parse('https://localhost:50529/API/UserInfo');
     final response = await http.post(
       url,
       headers: {
@@ -371,7 +372,7 @@ class ProgramFoodApiService {
     String soDienThoai = '',
   }) async {
     final token = await _getToken();
-    final url = Uri.parse('https://localhost:52126/API/User/ChinhSua');
+    final url = Uri.parse('https://localhost:50529/API/User/ChinhSua');
     final response = await http.post(
       url,
       headers: {
@@ -390,6 +391,42 @@ class ProgramFoodApiService {
 
     final data = await _handleResponse(response);
     return data['isSuccessed'] as bool;
+  }
+
+  Future<List<RankingModel>> fetchRankings(int chuongTrinhID,
+      {int ngonNguID = 1}) async {
+    final token = await _getToken();
+    final url = Uri.parse(
+      'https://localhost:50529/api/ThamGiaChuongTrinhMonAns/GetRankByChuongTrinhID?ngonNguID=$ngonNguID&chuongTrinhID=$chuongTrinhID',
+    );
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(
+          'fetchRankings Response: Status ${response.statusCode}, Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['isSuccessed'] == true) {
+          final List<dynamic> resultObj = data['resultObj'];
+          return resultObj.map((json) => RankingModel.fromJson(json)).toList();
+        } else {
+          throw Exception(data['message'] ?? 'Lấy danh sách xếp hạng thất bại');
+        }
+      } else {
+        throw Exception('Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching rankings: $e');
+      throw Exception('Lỗi khi lấy danh sách xếp hạng: $e');
+    }
   }
 
   // Remove redundant refreshToken method since it's handled by SecureStorageService
