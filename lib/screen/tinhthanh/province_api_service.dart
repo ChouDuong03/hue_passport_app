@@ -13,7 +13,7 @@ class ProvinceApiService {
   // Lấy danh sách tỉnh thành
   static Future<List<Province>> fetchProvinces() async {
     final response = await http.get(
-      Uri.parse('https://localhost:50529/api/DiaPhuongs/Gets'),
+      Uri.parse('https://localhost:53963/api/DiaPhuongs/Gets'),
     );
 
     if (response.statusCode == 200) {
@@ -39,7 +39,7 @@ class ProvinceApiService {
 
     final response = await http.put(
       Uri.parse(
-          'https://localhost:50529/api/Accounts/update-tinhthanh-dukhach'),
+          'https://localhost:53963/api/Accounts/update-tinhthanh-dukhach'),
       headers: {
         'Content-Type': 'application/json',
         if (token != null)

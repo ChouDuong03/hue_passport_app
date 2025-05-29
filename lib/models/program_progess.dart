@@ -13,7 +13,7 @@ class ProgramProgress {
     return ProgramProgress(
       tienDo: json['tienDo'] as String,
       isFinished: json['isFinished'] as bool,
-      listMocHanhTrinh: List<int>.from(json['listMocHanhTrinh'] as List),
+      listMocHanhTrinh: List<int>.from(json['listSoMonToiThieu'] as List),
     );
   }
 }

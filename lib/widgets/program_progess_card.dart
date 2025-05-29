@@ -53,7 +53,8 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
     final tienDoParts = widget.progress.tienDo.split('/');
     final completed = int.parse(tienDoParts[0]);
     final total = int.parse(tienDoParts[1]);
-    final milestones = _generateMilestones(widget.progress.listMocHanhTrinh);
+    final milestones =
+        _generateMilestones(widget.progress.listMocHanhTrinh, total);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -246,29 +247,22 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
     );
   }
 
-  List<int> _generateMilestones(List<int> listMocHanhTrinh) {
-    if (listMocHanhTrinh == null || listMocHanhTrinh.isEmpty) {
-      int total = int.parse(widget.progress.tienDo.split('/')[1]);
-      if (total <= 0) return [1];
+  List<int> _generateMilestones(List<int>? listSoMonToiThieu, int total) {
+    List<int> milestones = [1]; // Mốc 1 được cố định là 1
 
-      List<int> milestones = [1];
-
-      if (total > 2) {
-        int middleCount = total >= 10 ? 2 : (total >= 5 ? 1 : 0);
-        double step = (total - 1) / (middleCount + 1);
-        for (int i = 1; i <= middleCount; i++) {
-          milestones.add((1 + (i * step)).round());
-        }
-      }
-
-      if (total != 1) {
-        milestones.add(total);
-      }
-
-      return milestones.toSet().toList()..sort();
-    } else {
-      return listMocHanhTrinh.toSet().toList()..sort();
+    // Thêm các mốc tối thiểu từ listSoMonToiThieu, sắp xếp từ bé đến lớn
+    if (listSoMonToiThieu != null && listSoMonToiThieu.isNotEmpty) {
+      milestones.addAll(
+          listSoMonToiThieu.where((m) => m > 1 && m < total).toList()..sort());
     }
+
+    // Thêm mốc cuối là tổng số món
+    if (total > 1) {
+      milestones.add(total);
+    }
+
+    // Loại bỏ các mốc trùng lặp và sắp xếp lại
+    return milestones.toSet().toList()..sort();
   }
 
   Widget _buildStepCircle(int current, int total, bool completed) {
