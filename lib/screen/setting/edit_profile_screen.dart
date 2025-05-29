@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hue_passport_app/screen/tinhthanh/province_api_service.dart';
+import 'package:hue_passport_app/screen/tinhthanh/province_model.dart';
 import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:hue_passport_app/screen/quoctich/quoctich_model.dart';
 import 'package:hue_passport_app/screen/quoctich/quoctich_service.dart';
@@ -20,6 +22,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _gender;
   Nationality? _selectedNationality;
   late Future<List<Nationality>> _nationalitiesFuture;
+
+  Province? _selectedProvince;
+
+  late Future<List<Province>> _provinceFuture;
+
   late Future<UserInfoModel> _userInfoFuture;
 
   final ProgramFoodApiService _apiService = ProgramFoodApiService();
@@ -31,6 +38,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     // Lấy danh sách quốc tịch
     _nationalitiesFuture = NationalityApi.fetchNationalities();
+
+    _provinceFuture = ProvinceApiService.fetchProvinces();
 
     // Lấy thông tin người dùng
     _userInfoFuture = _apiService.getUserInfo();
@@ -191,16 +200,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         quocTich: _selectedNationality!.quocTichID,
         diaChi: diaChi,
         soDienThoai: soDienThoai,
+        tinhThanh: _selectedProvince!.id,
       );
 
       if (isSuccess) {
         // Refresh token after successful update
         final newAccessToken = await _storageService.refreshAccessToken();
-        if (newAccessToken != null) {
-          print('New access token saved: $newAccessToken');
-        } else {
-          print('Failed to refresh token');
-        }
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cập nhật thông tin thành công!')),
@@ -326,6 +331,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         onChanged: (Nationality? newValue) {
                           setState(() {
                             _selectedNationality = newValue;
+                          });
+                        },
+                        isExpanded: true,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Tỉnh Thành',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  FutureBuilder<List<Province>>(
+                    future: _provinceFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Lỗi: ${snapshot.error}');
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Text('Không có dữ liệu quốc tịch');
+                      }
+
+                      final provinces = snapshot.data!;
+                      return DropdownButton<Province>(
+                        value: _selectedProvince,
+                        hint: const Text('Chọn tỉnh thành'),
+                        items: provinces.map((Province provinces1) {
+                          return DropdownMenuItem<Province>(
+                            value: provinces1,
+                            child: Text(provinces1.tenDiaPhuong),
+                          );
+                        }).toList(),
+                        onChanged: (Province? newValue) {
+                          setState(() {
+                            _selectedProvince = newValue;
                           });
                         },
                         isExpanded: true,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/models/program_progess.dart';
 import 'package:hue_passport_app/models/program_time.dart';
+import 'package:hue_passport_app/widgets/certificate_popup.dart';
 import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:intl/intl.dart';
 
@@ -412,9 +413,17 @@ class _CongratulationPopupState extends State<CongratulationPopup>
       final result =
           await widget.apiService.confirmReward(widget.chuongTrinhID);
       if (result['isSuccessed']) {
+        final userInfo = await widget.apiService.getUserInfo();
+        final userName = userInfo.hoChieuHanhKhach?.hoTen ?? 'Người dùng';
+
+        final date = DateFormat('dd/MM/yyyy').format(DateTime.now());
         Get.back();
-        Get.snackbar('Thành công', 'Bạn đã nhận thưởng!',
-            snackPosition: SnackPosition.TOP);
+        Get.dialog(
+          CertificatePopup(
+            userName: userName,
+            date: date,
+          ),
+        );
       } else {
         Get.snackbar('Lỗi',
             result['message'] ?? 'Không thể nhận thưởng. Vui lòng thử lại!',

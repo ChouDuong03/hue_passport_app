@@ -37,6 +37,7 @@ class HoChieuHanhKhach {
   final String? ngayCapNhatCuoi; // Made nullable
   final String? tenQuocTich; // Made nullable
   final String? tenTinhThanh;
+  final int? tinhThanhID;
   final int? quocTichID; // Made nullable
   final String? token;
   final List<dynamic>? roles;
@@ -60,6 +61,7 @@ class HoChieuHanhKhach {
     this.ngayTao,
     this.ngayCapNhatCuoi,
     this.tenQuocTich,
+    this.tinhThanhID,
     this.tenTinhThanh,
     this.quocTichID,
     this.token,
@@ -87,6 +89,7 @@ class HoChieuHanhKhach {
       ngayCapNhatCuoi: json['ngayCapNhatCuoi'] as String?,
       tenQuocTich: json['tenQuocTich'] as String?,
       tenTinhThanh: json['tenTinhThanh'] as String?,
+      tinhThanhID: json['tinhThanhID'] as int?,
       quocTichID: json['quocTichID'] as int?,
       token: json['token'] as String?,
       roles: json['roles'] as List<dynamic>?,

@@ -15,14 +15,23 @@ class Province {
 }
 
 class ProvinceResponse {
+  final bool isSuccessed;
+  final String message;
   final List<Province> resultObj;
 
-  ProvinceResponse({required this.resultObj});
+  ProvinceResponse({
+    required this.isSuccessed,
+    required this.message,
+    required this.resultObj,
+  });
 
   factory ProvinceResponse.fromJson(Map<String, dynamic> json) {
     return ProvinceResponse(
+      isSuccessed: json['isSuccessed'],
+      message: json['message'],
       resultObj: List<Province>.from(
-          json['resultObj'].map((x) => Province.fromJson(x))),
+        json['resultObj'].map((x) => Province.fromJson(x)),
+      ),
     );
   }
 }

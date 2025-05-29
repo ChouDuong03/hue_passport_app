@@ -168,6 +168,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Icons.email, 'Email:', hoChieu.hopThu ?? 'Chưa có'),
                   _buildInfoRow(Icons.flag, 'Quốc tịch:',
                       hoChieu.tenQuocTich ?? 'Chưa có'),
+                  _buildInfoRow(Icons.home, 'Tỉnh thành:',
+                      hoChieu.tenTinhThanh ?? 'Chưa có'),
                 ],
               ),
             ),

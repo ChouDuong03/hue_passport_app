@@ -370,9 +370,11 @@ class ProgramFoodApiService {
     required int quocTich,
     String diaChi = '',
     String soDienThoai = '',
+    required int tinhThanh,
   }) async {
     final token = await _getToken();
-    final url = Uri.parse('https://localhost:50529/API/User/ChinhSua');
+    final url =
+        Uri.parse('https://localhost:50529/API/User/ChinhSua-TinhThanh');
     final response = await http.post(
       url,
       headers: {
@@ -386,6 +388,7 @@ class ProgramFoodApiService {
         'quocTich': quocTich,
         'diaChi': diaChi,
         'soDienThoai': soDienThoai,
+        'tinhThanh': tinhThanh,
       }),
     );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
+import 'package:hue_passport_app/screen/setting/profile_screen.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 import 'package:hue_passport_app/widgets/ranking_item_widget.dart'; // Add this import
@@ -269,18 +270,25 @@ class ProgramListScreen extends StatelessWidget {
             ),
 
             // Header với avatar và tiêu đề
-            const Positioned(
+            Positioned(
               top: 30,
               left: 16,
               right: 16,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: AssetImage('assets/images/useravatar.png'),
+                  GestureDetector(
+                    onTap: () {
+                      Get.to(
+                          () => ProfileScreen()); // Navigate to ProfileScreen
+                    },
+                    child: const CircleAvatar(
+                      radius: 20,
+                      backgroundImage:
+                          AssetImage('assets/images/useravatar.png'),
+                    ),
                   ),
-                  Text(
+                  const Text(
                     'Ẩm thực',
                     style: TextStyle(
                       fontFamily: 'Mulish',
@@ -289,7 +297,7 @@ class ProgramListScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 40),
+                  const SizedBox(width: 40),
                 ],
               ),
             ),
