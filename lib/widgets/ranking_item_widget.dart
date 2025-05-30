@@ -58,8 +58,8 @@ class RankingItemWidget extends StatelessWidget {
                     radius: 20,
                     backgroundImage: user.anhDaiDien != null
                         ? NetworkImage(
-                            'https://hochieudulichv2.huecit.com${user.anhDaiDien}')
-                        : const AssetImage('assets/images/default_avatar.png')
+                            'https://localhost:53963${user.anhDaiDien}')
+                        : const AssetImage('assets/images/useravatar.png')
                             as ImageProvider,
                     backgroundColor: Colors.grey.shade200,
                     onBackgroundImageError: (exception, stackTrace) {

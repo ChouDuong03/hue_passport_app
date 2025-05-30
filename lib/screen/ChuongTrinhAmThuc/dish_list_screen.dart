@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
+import 'package:hue_passport_app/models/program_time.dart';
+import 'package:intl/intl.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_detail_screen.dart';
 
 class DishListScreen extends StatefulWidget {
   final int chuongTrinhID;
   final ProgramFoodController controller = Get.find<ProgramFoodController>();
+  final ProgramTime time;
 
-  DishListScreen({super.key, required this.chuongTrinhID}) {
+  DishListScreen({super.key, required this.chuongTrinhID, required this.time}) {
     controller.fetchDishesByProgram(chuongTrinhID);
   }
 
@@ -31,7 +34,7 @@ class _DishListScreenState extends State<DishListScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Stack(
         children: [
-          // Phần tiêu đề với nút quay lại (nằm cố định)
+          // Phần tiêu đề với nút quay lại
           Container(
             height: 60,
             width: double.infinity,
@@ -62,15 +65,14 @@ class _DishListScreenState extends State<DishListScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // Để cân đối với IconButton
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
           ),
           // Phần nội dung có thể cuộn
           Padding(
-            padding: const EdgeInsets.only(
-                top: 60), // Đẩy nội dung xuống dưới tiêu đề
+            padding: const EdgeInsets.only(top: 60),
             child: SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.only(top: 12),
@@ -80,7 +82,6 @@ class _DishListScreenState extends State<DishListScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Danh sách món ăn
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
@@ -98,12 +99,48 @@ class _DishListScreenState extends State<DishListScreen> {
                             );
                           }),
                           const SizedBox(height: 8),
+                          // Hiển thị thời gian
+                          _buildDateRow(),
+                          const SizedBox(height: 8),
+                          // Hiển thị thông báo nếu chương trình đã hết hạn
+                          if (widget.time.isExpired) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.orange[50], // Nền màu cam nhạt
+                                border: Border.all(
+                                    color: Colors.orange[200]!), // Viền cam
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.warning,
+                                    color: Colors.orange,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Chương trình đã hết hạn',
+                                    style: TextStyle(
+                                      fontFamily: 'Mulish',
+                                      fontSize: 14,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          // Danh sách món ăn
                           Obx(() {
                             if (widget.controller.isLoadingDishes.value) {
                               return const Center(
                                   child: CircularProgressIndicator());
                             }
-
                             final dishes = widget.controller
                                     .dishesCache[widget.chuongTrinhID] ??
                                 [];
@@ -111,7 +148,6 @@ class _DishListScreenState extends State<DishListScreen> {
                               return const Center(
                                   child: Text('Không có món ăn nào.'));
                             }
-
                             return ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -120,7 +156,6 @@ class _DishListScreenState extends State<DishListScreen> {
                                 final dish = dishes[index];
                                 return GestureDetector(
                                   onTap: () {
-                                    // Chuyển đến trang chi tiết khi bấm vào bất kỳ đâu trong widget
                                     Get.to(() => DishDetailScreen(dish: dish));
                                   },
                                   child: Padding(
@@ -130,19 +165,17 @@ class _DishListScreenState extends State<DishListScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        // Ảnh đại diện
                                         CircleAvatar(
                                           radius: 24,
                                           backgroundImage: dish
                                                   .anhDaiDien.isNotEmpty
                                               ? NetworkImage(
-                                                  'https://localhost:52126${dish.anhDaiDien}')
+                                                  'https://localhost:53963${dish.anhDaiDien}')
                                               : const AssetImage(
-                                                      'assets/images/default_image.png')
+                                                      'assets/images/banhbeo.png')
                                                   as ImageProvider,
                                         ),
                                         const SizedBox(width: 12),
-                                        // Tên món ăn và trạng thái check-in
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
@@ -157,75 +190,95 @@ class _DishListScreenState extends State<DishListScreen> {
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
-                                              dish.isCheckedIn
-                                                  ? const Text(
-                                                      'Đã checkin',
+                                              // Kiểm tra trạng thái check-in và thời hạn chương trình
+                                              if (dish.isCheckedIn) ...[
+                                                const Text(
+                                                  'Đã checkin',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Mulish',
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.green,
+                                                  ),
+                                                ),
+                                              ] else if (widget
+                                                  .time.isExpired) ...[
+                                                // Nếu chương trình hết hạn, hiển thị nút "Chưa check in" màu xám
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color:
+                                                            Colors.grey[400]!),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                    color: Colors.grey[
+                                                        300], // Nút màu xám
+                                                  ),
+                                                  child: const Text(
+                                                    'Chưa check in',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Mulish',
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ] else ...[
+                                                // Nếu chưa hết hạn, hiển thị nút "Check in" màu cam
+                                                GestureDetector(
+                                                  onTapDown: (_) => setState(
+                                                      () => _isPressed = true),
+                                                  onTapUp: (_) => setState(
+                                                      () => _isPressed = false),
+                                                  onTapCancel: () => setState(
+                                                      () => _isPressed = false),
+                                                  onTap: () {
+                                                    Get.to(() =>
+                                                        DishDetailScreen(
+                                                            dish: dish));
+                                                  },
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                        milliseconds: 100),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: const Color(
+                                                              0xFFFF5722)),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15),
+                                                      color: _isPressed
+                                                          ? const Color(
+                                                              0xFFFF5722)
+                                                          : Colors.white,
+                                                    ),
+                                                    child: Text(
+                                                      'Check in',
                                                       style: TextStyle(
                                                         fontFamily: 'Mulish',
                                                         fontSize: 12,
                                                         fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.green,
-                                                      ),
-                                                    )
-                                                  : GestureDetector(
-                                                      onTapDown: (_) =>
-                                                          setState(() =>
-                                                              _isPressed =
-                                                                  true),
-                                                      onTapUp: (_) => setState(
-                                                          () => _isPressed =
-                                                              false),
-                                                      onTapCancel: () =>
-                                                          setState(() =>
-                                                              _isPressed =
-                                                                  false),
-                                                      onTap: () {
-                                                        // Chuyển đến trang chi tiết khi bấm nút
-                                                        Get.to(() =>
-                                                            DishDetailScreen(
-                                                                dish: dish));
-                                                      },
-                                                      child: AnimatedContainer(
-                                                        duration:
-                                                            const Duration(
-                                                                milliseconds:
-                                                                    100),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 12,
-                                                                vertical: 4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          border: Border.all(
-                                                              color: const Color(
-                                                                  0xFFFF5722),
-                                                              width: 1.5),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(15),
-                                                          color: _isPressed
-                                                              ? const Color(
-                                                                  0xFFFF5722)
-                                                              : Colors.white,
-                                                        ),
-                                                        child: Text(
-                                                          'Check in',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'Mulish',
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: _isPressed
-                                                                ? Colors.white
-                                                                : const Color(
-                                                                    0xFFFF5722),
-                                                          ),
-                                                        ),
+                                                            FontWeight.bold,
+                                                        color: _isPressed
+                                                            ? Colors.white
+                                                            : const Color(
+                                                                0xFFFF5722),
                                                       ),
                                                     ),
+                                                  ),
+                                                ),
+                                              ],
                                             ],
                                           ),
                                         ),
@@ -240,7 +293,7 @@ class _DishListScreenState extends State<DishListScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20), // Khoảng cách dưới cùng
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -248,6 +301,37 @@ class _DishListScreenState extends State<DishListScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDateRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.circle, color: Colors.orange, size: 10),
+            const SizedBox(width: 4),
+            Text(
+              'Bắt đầu: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiGianThamGia)}',
+              style: const TextStyle(
+                  fontSize: 12, fontFamily: 'Mulish', color: Colors.orange),
+            ),
+          ],
+        ),
+        const Icon(Icons.arrow_forward, color: Colors.black54, size: 16),
+        Row(
+          children: [
+            const Icon(Icons.circle, color: Colors.green, size: 10),
+            const SizedBox(width: 4),
+            Text(
+              'Kết thúc: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiHanHoanThanh)}',
+              style: const TextStyle(
+                  fontSize: 12, fontFamily: 'Mulish', color: Colors.green),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

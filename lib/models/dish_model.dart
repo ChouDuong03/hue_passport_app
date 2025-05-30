@@ -32,9 +32,7 @@ class DishModel {
       kieuMon: json['kieuMon'] ?? 0, // Giả định mặc định nếu không có
       thucUong: json['thucUong'] ?? false, // Giả định mặc định nếu không có
       amThucId: json['amThucId'] ?? 0, // Giả định mặc định nếu không có
-      anhDaiDien: json['anhDaiDienQuanAn'] ??
-          json['anhDaiDienChuongTrinh'] ??
-          '', // Lấy từ API
+      anhDaiDien: json['anhDaiDien'] as String, // Lấy từ API
       ngonNguID: json['ngonNguID'] ?? 1, // Lấy từ API hoặc mặc định
       isCheckedIn: json['isCheckedIn'] == true ||
           json['isCheckedIn'] == 1 ||

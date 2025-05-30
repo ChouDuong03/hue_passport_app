@@ -1,10 +1,12 @@
 class DishDetailModel {
+  final String anhDaiDien;
   final String tenMon;
   final int kieuMon;
   final bool thucUong;
   final List<ChildMonAnChiTiet> childMonAnChiTiets;
 
   DishDetailModel({
+    required this.anhDaiDien,
     required this.tenMon,
     required this.kieuMon,
     required this.thucUong,
@@ -17,6 +19,7 @@ class DishDetailModel {
       throw Exception('resultObj is null');
     }
     return DishDetailModel(
+      anhDaiDien: resultObj['anhDaiDien'] ?? '',
       tenMon: resultObj['tenMon'] ?? '',
       kieuMon: resultObj['kieuMon'] ?? 0,
       thucUong: resultObj['thucUong'] ?? false,

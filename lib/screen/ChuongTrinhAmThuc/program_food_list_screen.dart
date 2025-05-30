@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/nav_controller.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/screen/setting/profile_screen.dart';
+import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 import 'package:hue_passport_app/widgets/ranking_item_widget.dart'; // Add this import
@@ -11,6 +12,8 @@ class ProgramListScreen extends StatelessWidget {
   final controller = Get.put(ProgramFoodController());
   final navController = Get.find<NavController>();
   final PageController _pageController = PageController();
+
+  final ProgramFoodApiService apiService = ProgramFoodApiService();
 
   ProgramListScreen({super.key});
 
@@ -240,13 +243,25 @@ class ProgramListScreen extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final currentIndex = _pageController.page?.round() ?? 0;
                     if (controller.programs.isNotEmpty) {
                       final chuongTrinhID =
                           controller.programs[currentIndex].chuongTrinhID;
-                      Get.to(
-                          () => DishListScreen(chuongTrinhID: chuongTrinhID));
+                      try {
+                        // Gọi API fetchProgramTime từ ProgramFoodApiService
+                        final programTime =
+                            await apiService.fetchProgramTime(chuongTrinhID);
+                        // Điều hướng đến DishListScreen với chuongTrinhID và time
+                        Get.to(() => DishListScreen(
+                              chuongTrinhID: chuongTrinhID,
+                              time: programTime,
+                            ));
+                      } catch (e) {
+                        // Xử lý lỗi khi gọi API thất bại
+                        Get.snackbar(
+                            'Lỗi', 'Không thể lấy dữ liệu thời gian: $e');
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

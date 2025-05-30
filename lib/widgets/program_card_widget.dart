@@ -3,12 +3,15 @@ import 'package:get/get.dart';
 import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
+import 'package:hue_passport_app/services/program_food_api_service.dart';
 
 class ProgramCardWidget extends StatelessWidget {
   final ProgramFoodModel program;
   final int currentPage;
   final int totalPages;
   final controller = Get.find<ProgramFoodController>();
+
+  final ProgramFoodApiService apiService = ProgramFoodApiService();
 
   ProgramCardWidget({
     super.key,
@@ -28,7 +31,7 @@ class ProgramCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImageSection(program.anhDaiDien),
+            _buildImageSection('https://localhost:53963${program.anhDaiDien}'),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,7 +143,7 @@ class ProgramCardWidget extends StatelessWidget {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.network(
-                        dish.anhDaiDien,
+                        'https://localhost:53963${dish.anhDaiDien}',
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
@@ -211,13 +214,18 @@ class ProgramCardWidget extends StatelessWidget {
             right: 0,
             child: Center(
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   // Thêm hành động khi nhấn nút (ví dụ: điều hướng đến màn hình chi tiết)
 
                   if (controller.programs.isNotEmpty) {
                     final chuongTrinhID =
                         controller.programs[currentPage].chuongTrinhID;
-                    Get.to(() => DishListScreen(chuongTrinhID: chuongTrinhID));
+                    final programTime =
+                        await apiService.fetchProgramTime(chuongTrinhID);
+                    Get.to(() => DishListScreen(
+                          chuongTrinhID: chuongTrinhID,
+                          time: programTime,
+                        ));
                   } // Ví dụ: điều hướng đến màn hình chi tiết
                 },
                 style: ElevatedButton.styleFrom(

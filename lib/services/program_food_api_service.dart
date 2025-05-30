@@ -53,10 +53,10 @@ class ProgramFoodApiService {
     }
   }
 
-  Future<List<ProgramFoodModel>> fetchPrograms() async {
+  Future<List<ProgramFoodModel>> fetchPrograms({int ngonNguID = 1}) async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('$baseUrl/Gets'),
+      Uri.parse('$baseUrl/Gets?ngonNguID=$ngonNguID'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -98,7 +98,7 @@ class ProgramFoodApiService {
             kieuMon: dishDetail.kieuMon,
             thucUong: dishDetail.thucUong,
             amThucId: 0,
-            anhDaiDien: '',
+            anhDaiDien: dishDetail.anhDaiDien,
             ngonNguID: targetLanguageId,
             isCheckedIn: dishes2.isCheckedIn,
           ));

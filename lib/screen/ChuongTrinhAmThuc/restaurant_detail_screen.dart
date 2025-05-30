@@ -107,8 +107,8 @@ class RestaurantDetailScreen extends StatelessWidget {
               height: 200,
               width: double.infinity,
               child: ClipRRect(
-                child: Image.network(
-                  "${restaurant.anhDaiDien}",
+                child: Image.asset(
+                  "assets/images/quanbado.png",
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,
