@@ -39,7 +39,6 @@ class ProgramFoodApiService {
   Future<String?> _getToken() async {
     String? token = await storageService.getAccessToken();
     if (token == null) {
-      // Attempt to refresh token
       token = await storageService.refreshAccessToken();
     }
     return token;
@@ -48,8 +47,12 @@ class ProgramFoodApiService {
   static Future<Map<String, dynamic>> _handleResponse(
       http.Response response) async {
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data;
+      try {
+        final data = json.decode(response.body);
+        return data;
+      } catch (e) {
+        throw Exception('Failed to parse JSON: $e');
+      }
     } else {
       throw Exception(
           'Failed to load data, status code: ${response.statusCode}, message: ${response.body}');
@@ -78,61 +81,58 @@ class ProgramFoodApiService {
   }
 
   Future<List<DishModel>> fetchDishesByProgram(int chuongTrinhID) async {
-    final dish2 = await fetchDishesByProgram2(chuongTrinhID);
-    if (dish2.isEmpty) {
-      return [];
-    }
-
-    final List<DishModel> dish = [];
+    final token = await _getToken();
     String currentLanguage = Get.locale?.languageCode ?? 'vi';
     int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
 
-    for (var dishes2 in dish2) {
-      try {
-        final dishDetail = await fetchDishDetail(dishes2.monAnID);
-        if (dishDetail.childMonAnChiTiets.isNotEmpty &&
-            dishDetail.childMonAnChiTiets
-                .any((detail) => detail.ngonNguID == targetLanguageId)) {
-          dish.add(DishModel(
-            id: dishes2.monAnID,
-            chuongTrinhID: dishes2.chuongTrinhID,
-            tenMon: dishDetail.tenMon,
-            maLoai: 0,
-            kieuMon: dishDetail.kieuMon,
-            thucUong: dishDetail.thucUong,
-            amThucId: 0,
-            anhDaiDien: dishDetail.anhDaiDien,
-            ngonNguID: targetLanguageId,
-            isCheckedIn: dishes2.isCheckedIn,
-          ));
-        }
-      } catch (e) {
-        print('Error fetching dish detail for monAnID ${dishes2.monAnID}: $e');
-        continue;
-      }
+    // Lấy danh sách món ăn từ API mới
+    final dishResponse = await http.get(
+      Uri.parse(
+          '$dishBaseUrl/GetDanhSachMonAnByChuongTrinh/$chuongTrinhID?ngonNguID=$targetLanguageId'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final dishData = await _handleResponse(dishResponse);
+    if (!dishData['isSuccessed'] || dishData['resultObj'] == null) {
+      return [];
     }
+    List<dynamic> dishList = dishData['resultObj'];
 
-    return dish;
-  }
-
-  Future<List<DishModel2>> fetchDishesByProgram2(int chuongTrinhID) async {
-    final token = await _getToken();
-    final response = await http.get(
+    // Lấy danh sách check-in để xác định trạng thái isCheckedIn
+    final checkinResponse = await http.get(
       Uri.parse(
           'https://hochieudulichv2.huecit.com/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
-    final data = await _handleResponse(response);
-    List list = data['resultObj'];
-    String currentLanguage = Get.locale?.languageCode ?? 'vi';
-    int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
-    return list
-        .map((e) => DishModel2.fromJson(e))
-        .where((dish) =>
-            dish.ngonNguID == targetLanguageId &&
-            dish.chuongTrinhID == chuongTrinhID)
-        .toList();
+    final checkinData = await _handleResponse(checkinResponse);
+    if (!checkinData['isSuccessed'] || checkinData['resultObj'] == null) {
+      return dishList.map((e) => DishModel.fromJson(e)).toList();
+    }
+    List<dynamic> checkinList = checkinData['resultObj'];
+
+    // Tạo danh sách DishModel và cập nhật isCheckedIn
+    return dishList.map((dishJson) {
+      bool isCheckedIn = checkinList.any((checkin) =>
+          checkin['chuongTrinhID'] == chuongTrinhID &&
+          checkin['monAnID'] == dishJson['id'] &&
+          checkin['ngonNguID'] == targetLanguageId &&
+          checkin['isCheckedIn'] == true);
+      return DishModel(
+        id: dishJson['id'],
+        chuongTrinhID: chuongTrinhID,
+        tenMon: dishJson['tenMon'],
+        maLoai: dishJson['maLoai'] ?? 0,
+        kieuMon: dishJson['kieuMon'] ?? 0,
+        thucUong: dishJson['thucUong'] ?? false,
+        amThucId: dishJson['amThucId'] ?? 0,
+        anhDaiDien: dishJson['anhDaiDien'],
+        ngonNguID: dishJson['ngonNguID'] ?? targetLanguageId,
+        isCheckedIn: isCheckedIn,
+      );
+    }).toList();
   }
+
+  // Loại bỏ fetchDishesByProgram2 vì không còn cần thiết
+  // Future<List<DishModel2>> fetchDishesByProgram2(int chuongTrinhID) async { ... }
 
   Future<List<TopCheckInUserModel>> fetchTop5CheckInUsers(
       {int pageSize = 5}) async {
@@ -272,7 +272,6 @@ class ProgramFoodApiService {
     final data = await _handleResponse(response);
     return {
       'isSuccessed': data['isSuccessed'] as bool,
-      // Thêm resultObj để sử dụng sau nếu cần
     };
   }
 
@@ -437,6 +436,4 @@ class ProgramFoodApiService {
       throw Exception('Lỗi khi lấy danh sách xếp hạng: $e');
     }
   }
-
-  // Remove redundant refreshToken method since it's handled by SecureStorageService
 }
