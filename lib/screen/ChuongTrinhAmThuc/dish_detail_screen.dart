@@ -24,8 +24,6 @@ class DishDetailScreen extends StatefulWidget {
   State<DishDetailScreen> createState() => _DishDetailScreenState();
 }
 
-final baseUrl = "https://localhost:53963";
-
 class _DishDetailScreenState extends State<DishDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -124,7 +122,7 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                 width: MediaQuery.of(context).size.width,
                                 height: MediaQuery.of(context).size.width * 0.5,
                                 child: Image.network(
-                                  "$baseUrl${widget.dish.anhDaiDien}",
+                                  widget.dish.anhDaiDien,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
