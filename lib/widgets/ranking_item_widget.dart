@@ -58,7 +58,7 @@ class RankingItemWidget extends StatelessWidget {
                     radius: 20,
                     backgroundImage: user.anhDaiDien != null
                         ? NetworkImage(
-                            'https://localhost:53963${user.anhDaiDien}')
+                            'https://hochieudulichv2.huecit.com${user.anhDaiDien}')
                         : const AssetImage('assets/images/useravatar.png')
                             as ImageProvider,
                     backgroundColor: Colors.grey.shade200,

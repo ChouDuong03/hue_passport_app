@@ -58,7 +58,7 @@ class SecureStorageService {
 
     try {
       final response = await http.post(
-        Uri.parse('https://localhost:53963/API/RefreshToken'),
+        Uri.parse('https://hochieudulichv2.huecit.com/API/RefreshToken'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'accessToken': await getAccessToken() ?? '',

@@ -31,7 +31,8 @@ class ProgramCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImageSection('https://localhost:53963${program.anhDaiDien}'),
+            _buildImageSection(
+                'https://hochieudulichv2.huecit.com${program.anhDaiDien}'),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,7 +144,7 @@ class ProgramCardWidget extends StatelessWidget {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.network(
-                        'https://localhost:53963${dish.anhDaiDien}',
+                        'https://hochieudulichv2.huecit.com${dish.anhDaiDien}',
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
