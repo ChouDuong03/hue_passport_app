@@ -81,29 +81,18 @@ void showCheckinDialog(
                               });
 
                               try {
-                                // Gọi API check-in địa điểm
-                                final diaDiemResult =
-                                    await ApiCheckinFoodService
-                                        .postCheckinDiaDiem(
+                                // Gọi API check-in duy nhất
+                                final result =
+                                    await ApiCheckinFoodService.postCheckin(
                                   diaDiemId: diadiemId,
                                   chuongTrinhId: chuongTrinhId,
-                                  viDo: viDo,
-                                  kinhDo: kinhDo,
-                                );
-
-                                // Gọi API check-in món ăn (multipart, có thể thêm ảnh)
-                                final multipartResult =
-                                    await ApiCheckinFoodService
-                                        .postCheckinMultipart(
                                   monAnId: monAnId,
-                                  chuongTrinhId: chuongTrinhId,
                                   viDo: viDo,
                                   kinhDo: kinhDo,
                                 );
 
-                                // Kiểm tra kết quả của cả hai API
-                                if (diaDiemResult.success &&
-                                    multipartResult.success) {
+                                // Kiểm tra kết quả
+                                if (result.success) {
                                   Navigator.of(context).pop();
                                   showCheckinSuccessDialog(
                                     context,
@@ -114,6 +103,8 @@ void showCheckinDialog(
                                     ngonNguId:
                                         1, // Giả sử ngonNguId là 1 (Tiếng Việt), có thể động hóa nếu cần
                                   );
+                                } else {
+                                  throw Exception('Check-in thất bại');
                                 }
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(

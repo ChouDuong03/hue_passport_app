@@ -45,8 +45,8 @@ class FakeCameraScreen extends StatelessWidget {
                             monAnId: monAnId,
                             diadiemId: diadiemId,
                             chuongTrinhId: chuongTrinhId,
-                            viDo: 2,
-                            kinhDo: 3,
+                            viDo: 16.469107,
+                            kinhDo: 107.59097,
                           );
                         },
                         child: Container(

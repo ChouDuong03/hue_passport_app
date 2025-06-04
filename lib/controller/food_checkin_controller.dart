@@ -7,6 +7,7 @@ class CheckinController extends GetxController {
 
   Future<void> checkIn({
     required int monAnId,
+    required int diaDiemId, // Thêm tham số bắt buộc diaDiemId
     required int chuongTrinhId,
     required double viDo,
     required double kinhDo,
@@ -14,8 +15,9 @@ class CheckinController extends GetxController {
     try {
       isLoading.value = true;
 
-      final result = await ApiCheckinFoodService.postCheckinMultipart(
+      final result = await ApiCheckinFoodService.postCheckin(
         monAnId: monAnId,
+        diaDiemId: diaDiemId,
         chuongTrinhId: chuongTrinhId,
         viDo: viDo,
         kinhDo: kinhDo,
