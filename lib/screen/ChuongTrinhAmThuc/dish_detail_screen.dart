@@ -4,7 +4,6 @@ import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
 import 'package:hue_passport_app/models/location_model.dart';
-import 'package:hue_passport_app/models/location_model_2.dart';
 import 'package:hue_passport_app/screen/Camera/camera_screen.dart';
 import 'package:hue_passport_app/widgets/checkin_button.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/restaurant_detail_screen.dart';
@@ -16,8 +15,7 @@ class DishDetailScreen extends StatefulWidget {
   DishDetailScreen({super.key, required this.dish}) {
     final int id = dish.id ?? 1;
     controller.fetchDishDetail(id);
-    controller.fetchLocationsByDish2(id); // Lấy danh sách check-in
-    controller.fetchLocationsByDish(id); // Lấy danh sách chi tiết địa điểm
+    controller.fetchLocationsByDish(id); // Chỉ sử dụng fetchLocationsByDish
   }
 
   @override
@@ -105,9 +103,9 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                     }
 
                     final childDetail = detail.childMonAnChiTiets.first;
-                    final locations = widget
-                            .controller.locationsCache2[widget.dish.id ?? 1] ??
-                        [];
+                    final locations =
+                        widget.controller.locationsCache[widget.dish.id ?? 1] ??
+                            [];
                     bool hasCheckedInAnyLocation =
                         locations.any((loc) => loc.isCheckedIn);
 
@@ -122,9 +120,11 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                 width: MediaQuery.of(context).size.width,
                                 height: MediaQuery.of(context).size.width * 0.5,
                                 child: Image.network(
-                                  widget.dish.anhDaiDien,
+                                  widget.dish.anhDaiDien ?? '',
                                   width: double.infinity,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.error, size: 50),
                                 ),
                               ),
                               Positioned(
@@ -360,13 +360,12 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                             Get.to(() => FakeCameraScreen(
                                                   monAnId:
                                                       firstUncheckInLocation
-                                                          .monAnID,
+                                                          .monAnID!,
                                                   diadiemId:
-                                                      firstUncheckInLocation
-                                                          .quanAnID,
+                                                      firstUncheckInLocation.id,
                                                   chuongTrinhId:
                                                       firstUncheckInLocation
-                                                          .chuongTrinhID,
+                                                          .chuongTrinhID!,
                                                 ));
                                           },
                                         ),
@@ -377,21 +376,12 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                               ),
                               Obx(() {
                                 final locations = widget.controller
-                                        .locationsCache2[widget.dish.id ?? 1] ??
-                                    [];
-                                final locations1 = widget.controller
                                         .locationsCache[widget.dish.id ?? 1] ??
                                     [];
 
-                                if (locations.isEmpty && locations1.isEmpty) {
+                                if (locations.isEmpty) {
                                   return const Center(
                                       child: Text('Không có địa điểm nào.'));
-                                }
-
-                                if (locations.length != locations1.length) {
-                                  return const Center(
-                                      child: Text(
-                                          'Dữ liệu địa điểm không đồng bộ. Vui lòng thử lại sau.'));
                                 }
 
                                 return SingleChildScrollView(
@@ -400,27 +390,23 @@ class _DishDetailScreenState extends State<DishDetailScreen>
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 8),
-                                      ...locations.asMap().entries.map((entry) {
-                                        int index = entry.key;
-                                        var location = entry.value;
-                                        var correspondingLocation =
-                                            locations1[index];
-                                        final detail = correspondingLocation
-                                                .getDetailByLanguage(1) ??
-                                            correspondingLocation
-                                                .childGetDiaDiemByMonAns.first;
+                                      ...locations.map((location) {
+                                        final detail =
+                                            location.getDetailByLanguage(1) ??
+                                                location.childGetDiaDiemByMonAns
+                                                    .first;
                                         return RestaurantItem(
                                           name: detail.tenDiaDiem,
-                                          soNha:
-                                              correspondingLocation.soNha ?? '',
+                                          soNha: location.soNha ?? '',
                                           duongPho: detail.duongPho,
                                           hasCheckedIn: location.isCheckedIn,
-                                          location: correspondingLocation,
-                                          monAnId: location.monAnID,
-                                          chuongTrinhId: location.chuongTrinhID,
-                                          quanAnId: location.quanAnID,
+                                          location: location,
+                                          monAnId: location.monAnID ?? 0,
+                                          chuongTrinhId:
+                                              location.chuongTrinhID ?? 0,
+                                          quanAnId: location.id,
                                         );
-                                      }),
+                                      }).toList(),
                                     ],
                                   ),
                                 );

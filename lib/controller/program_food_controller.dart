@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:hue_passport_app/models/dish_model.dart';
 import 'package:hue_passport_app/models/dish_detail_model.dart';
-import 'package:hue_passport_app/models/location_model_2.dart';
 import 'package:hue_passport_app/models/program_food_detail_model.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/models/ranking_model.dart';
@@ -15,8 +14,8 @@ class ProgramFoodController extends GetxController {
   var dishesCache = <int, List<DishModel>>{}.obs;
   var dishDetailCache = <int, DishDetailModel>{}.obs;
   var topCheckInUsers = <TopCheckInUserModel>[].obs;
-  var locationsCache = <int, List<LocationModel>>{}.obs;
-  var locationsCache2 = <int, List<LocationModel2>>{}.obs; // Cache theo dishId
+  var locationsCache =
+      <int, List<LocationModel>>{}.obs; // Chỉ dùng LocationModel
   var rankings = <RankingModel>[].obs;
   var isLoading = false.obs;
   var isLoadingDetail = false.obs;
@@ -150,24 +149,6 @@ class ProgramFoodController extends GetxController {
       final locations = await apiService.fetchLocationsByDish(dishId);
       if (locations != null && locations.isNotEmpty) {
         locationsCache[dishId] = locations;
-      } else {
-        throw Exception('Không tìm thấy danh sách địa điểm');
-      }
-    } catch (e) {
-      Get.snackbar('Lỗi', 'Không thể tải danh sách địa điểm: $e',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoadingLocations.value = false;
-    }
-  }
-
-  Future<void> fetchLocationsByDish2(int dishId) async {
-    if (locationsCache2.containsKey(dishId)) return;
-    isLoadingLocations.value = true;
-    try {
-      final locations = await apiService.fetchLocationsByDish2(dishId);
-      if (locations != null && locations.isNotEmpty) {
-        locationsCache2[dishId] = locations;
       } else {
         throw Exception('Không tìm thấy danh sách địa điểm');
       }

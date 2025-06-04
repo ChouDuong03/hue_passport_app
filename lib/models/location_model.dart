@@ -1,5 +1,3 @@
-import 'package:hue_passport_app/models/location_model_2.dart';
-
 class LocationModel {
   final int id;
   final String? anhDaiDien;
@@ -8,7 +6,7 @@ class LocationModel {
   final int hangSao;
   final int? loaiHinhId;
   final int dienTichMatBang;
-  final int soTang;
+  final int? soTang;
   final String? soNha;
   final int phuongXaId;
   final int quanHuyenId;
@@ -19,8 +17,8 @@ class LocationModel {
   final String? website;
   final String? hoTenNguoiDaiDien;
   final String? thoiDiemBatDauKinhDoanh;
-  final String gioDongCua;
-  final String gioMoCua;
+  final String? gioDongCua;
+  final String? gioMoCua;
   final double toaDoX;
   final double toaDoY;
   final int banKinhQuyUoc;
@@ -31,6 +29,10 @@ class LocationModel {
   final String? maDoanhNghiep;
   final bool thuocHoChieu;
   final List<LocationDetail> childGetDiaDiemByMonAns;
+  final int? chuongTrinhID; // Thêm từ LocationModel2
+  final int? monAnID; // Thêm từ LocationModel2
+  final int? ngonNguID; // Thêm từ LocationModel2, có thể ghi đè nếu cần
+  final bool isCheckedIn; // Thêm từ LocationModel2
 
   LocationModel({
     required this.id,
@@ -63,44 +65,107 @@ class LocationModel {
     this.maDoanhNghiep,
     required this.thuocHoChieu,
     required this.childGetDiaDiemByMonAns,
+    this.chuongTrinhID,
+    this.monAnID,
+    this.ngonNguID,
+    this.isCheckedIn = false,
   });
 
   factory LocationModel.fromJson(Map<String, dynamic> json) {
+    // Xử lý cho API GetDanhSachDiaDiemByMonAn
+    if (json.containsKey('resultObj')) {
+      return LocationModel(
+        id: json['resultObj']['id'] as int,
+        anhDaiDien: json['resultObj']['anhDaiDien'] as String?,
+        soGiayPhep: json['resultObj']['soGiayPhep'] as String?,
+        linhVucKinhDoanhId: json['resultObj']['linhVucKinhDoanhId'] as int?,
+        hangSao: json['resultObj']['hangSao'] as int,
+        loaiHinhId: json['resultObj']['loaiHinhId'] as int?,
+        dienTichMatBang: json['resultObj']['dienTichMatBang'] as int,
+        soTang: json['resultObj']['soTang'] as int?,
+        soNha: json['resultObj']['soNha'] as String?,
+        phuongXaId: json['resultObj']['phuongXaId'] as int,
+        quanHuyenId: json['resultObj']['quanHuyenId'] as int,
+        tinhThanhId: json['resultObj']['tinhThanhId'] as int,
+        soDienThoai: json['resultObj']['soDienThoai'] as String?,
+        fax: json['resultObj']['fax'] as String?,
+        email: json['resultObj']['email'] as String?,
+        website: json['resultObj']['website'] as String?,
+        hoTenNguoiDaiDien: json['resultObj']['hoTenNguoiDaiDien'] as String?,
+        thoiDiemBatDauKinhDoanh:
+            json['resultObj']['thoiDiemBatDauKinhDoanh'] as String?,
+        gioDongCua: json['resultObj']['gioDongCua'] as String?,
+        gioMoCua: json['resultObj']['gioMoCua'] as String?,
+        toaDoX: (json['resultObj']['toaDoX'] as num).toDouble(),
+        toaDoY: (json['resultObj']['toaDoY'] as num).toDouble(),
+        banKinhQuyUoc: json['resultObj']['banKinhQuyUoc'] as int,
+        ngayCVDatChuan: json['resultObj']['ngayCVDatChuan'] as String?,
+        soCVDatChuan: json['resultObj']['soCVDatChuan'] as String?,
+        nhaCungCapId: json['resultObj']['nhaCungCapId'] as int?,
+        phucVu: json['resultObj']['phucVu'] as String?,
+        maDoanhNghiep: json['resultObj']['maDoanhNghiep'] as String?,
+        thuocHoChieu: json['resultObj']['thuocHoChieu'] as bool? ?? false,
+        childGetDiaDiemByMonAns: (json['resultObj']['childGetDiaDiemByMonAns']
+                    as List?)
+                ?.map((e) => LocationDetail.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+        chuongTrinhID: null,
+        monAnID: null,
+        ngonNguID: json['resultObj']['ngonNguID'] as int?,
+        isCheckedIn: false,
+      );
+    }
+    // Xử lý cho API get-lichsu-checkin
     return LocationModel(
-      id: json['resultObj']['id'] as int,
-      anhDaiDien: json['resultObj']['anhDaiDien'] as String?,
-      soGiayPhep: json['resultObj']['soGiayPhep'] as String?,
-      linhVucKinhDoanhId: json['resultObj']['linhVucKinhDoanhId'] as int?,
-      hangSao: json['resultObj']['hangSao'] as int,
-      loaiHinhId: json['resultObj']['loaiHinhId'] as int?,
-      dienTichMatBang: json['resultObj']['dienTichMatBang'] as int,
-      soTang: json['resultObj']['soTang'] as int,
-      soNha: json['resultObj']['soNha'] as String?,
-      phuongXaId: json['resultObj']['phuongXaId'] as int,
-      quanHuyenId: json['resultObj']['quanHuyenId'] as int,
-      tinhThanhId: json['resultObj']['tinhThanhId'] as int,
-      soDienThoai: json['resultObj']['soDienThoai'] as String?,
-      fax: json['resultObj']['fax'] as String?,
-      email: json['resultObj']['email'] as String?,
-      website: json['resultObj']['website'] as String?,
-      hoTenNguoiDaiDien: json['resultObj']['hoTenNguoiDaiDien'] as String?,
-      thoiDiemBatDauKinhDoanh:
-          json['resultObj']['thoiDiemBatDauKinhDoanh'] as String?,
-      gioDongCua: json['resultObj']['gioDongCua'] as String,
-      gioMoCua: json['resultObj']['gioMoCua'] as String,
-      toaDoX: (json['resultObj']['toaDoX'] as num).toDouble(),
-      toaDoY: (json['resultObj']['toaDoY'] as num).toDouble(),
-      banKinhQuyUoc: json['resultObj']['banKinhQuyUoc'] as int,
-      ngayCVDatChuan: json['resultObj']['ngayCVDatChuan'] as String?,
-      soCVDatChuan: json['resultObj']['soCVDatChuan'] as String?,
-      nhaCungCapId: json['resultObj']['nhaCungCapId'] as int?,
-      phucVu: json['resultObj']['phucVu'] as String?,
-      maDoanhNghiep: json['resultObj']['maDoanhNghiep'] as String?,
-      thuocHoChieu: json['resultObj']['thuocHoChieu'] as bool,
-      childGetDiaDiemByMonAns:
-          (json['resultObj']['childGetDiaDiemByMonAns'] as List)
-              .map((e) => LocationDetail.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      id: json['quanAnID'] as int,
+      anhDaiDien: null,
+      soGiayPhep: null,
+      linhVucKinhDoanhId: null,
+      hangSao: 0,
+      loaiHinhId: null,
+      dienTichMatBang: 0,
+      soTang: 0,
+      soNha: json['soNha'] as String,
+      phuongXaId: 0,
+      quanHuyenId: 0,
+      tinhThanhId: 0,
+      soDienThoai: null,
+      fax: null,
+      email: null,
+      website: null,
+      hoTenNguoiDaiDien: null,
+      thoiDiemBatDauKinhDoanh: null,
+      gioDongCua: '',
+      gioMoCua: '',
+      toaDoX: 0.0,
+      toaDoY: 0.0,
+      banKinhQuyUoc: 0,
+      ngayCVDatChuan: null,
+      soCVDatChuan: null,
+      nhaCungCapId: null,
+      phucVu: null,
+      maDoanhNghiep: null,
+      thuocHoChieu: false,
+      childGetDiaDiemByMonAns: [
+        LocationDetail(
+          noiDungID: 0,
+          ngonNguID: json['ngonNguID'] as int,
+          tenDiaDiem: json['ten'] as String,
+          duongPho: json['duongPho'] as String,
+          ghiChu: null,
+          tenVietTat: '',
+          gioiThieu: '',
+          tenLoai: '',
+          moTa: '',
+        ),
+      ],
+      chuongTrinhID: json['chuongTrinhID'] as int?,
+      monAnID: json['monAnID'] as int?,
+      ngonNguID: json['ngonNguID'] as int?,
+      isCheckedIn: json['isCheckedIn'] == true ||
+          json['isCheckedIn'] == 1 ||
+          json['isCheckedIn'] == 'true',
     );
   }
 
@@ -137,6 +202,10 @@ class LocationModel {
       'thuocHoChieu': thuocHoChieu,
       'childGetDiaDiemByMonAns':
           childGetDiaDiemByMonAns.map((x) => x.toJson()).toList(),
+      'chuongTrinhID': chuongTrinhID,
+      'monAnID': monAnID,
+      'ngonNguID': ngonNguID,
+      'isCheckedIn': isCheckedIn ? 1 : 0,
     };
   }
 
@@ -144,53 +213,6 @@ class LocationModel {
     return childGetDiaDiemByMonAns.firstWhere(
       (detail) => detail.ngonNguID == ngonNguID,
       orElse: () => childGetDiaDiemByMonAns.first,
-    );
-  }
-
-  factory LocationModel.fromLocationModel2(LocationModel2 model) {
-    return LocationModel(
-      id: model.quanAnID, // Sử dụng quanAnID làm id
-      anhDaiDien: null,
-      soGiayPhep: null,
-      linhVucKinhDoanhId: null,
-      hangSao: 0,
-      loaiHinhId: null,
-      dienTichMatBang: 0,
-      soTang: 0,
-      soNha: model.soNha,
-      phuongXaId: 0,
-      quanHuyenId: 0,
-      tinhThanhId: 0,
-      soDienThoai: null,
-      fax: null,
-      email: null,
-      website: null,
-      hoTenNguoiDaiDien: null,
-      thoiDiemBatDauKinhDoanh: null,
-      gioDongCua: '',
-      gioMoCua: '',
-      toaDoX: 0.0,
-      toaDoY: 0.0,
-      banKinhQuyUoc: 0,
-      ngayCVDatChuan: null,
-      soCVDatChuan: null,
-      nhaCungCapId: null,
-      phucVu: null,
-      maDoanhNghiep: null,
-      thuocHoChieu: false,
-      childGetDiaDiemByMonAns: [
-        LocationDetail(
-          noiDungID: 0,
-          ngonNguID: model.ngonNguID,
-          tenDiaDiem: model.ten,
-          duongPho: model.duongPho,
-          ghiChu: null,
-          tenVietTat: '',
-          gioiThieu: '',
-          tenLoai: '',
-          moTa: '',
-        ),
-      ],
     );
   }
 }

@@ -153,8 +153,12 @@ class ProgramFoodApiService {
 
   Future<LocationModel> fetchLocationDetail(int locationId) async {
     final token = await _getToken();
+    String currentLanguage = Get.locale?.languageCode ?? 'vi';
+    int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
+
     final response = await http.get(
-      Uri.parse('$danhSachQuanAn/GetDiaDiemChiTiet/$locationId'),
+      Uri.parse(
+          '$danhSachQuanAn/GetDiaDiemChiTiet/$locationId?ngonNguID=$targetLanguageId'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -162,56 +166,104 @@ class ProgramFoodApiService {
   }
 
   Future<List<LocationModel>> fetchLocationsByDish(int dishId) async {
-    final locations2 = await fetchLocationsByDish2(dishId);
-    if (locations2.isEmpty) {
-      return [];
-    }
-
-    final List<LocationModel> locations = [];
+    final token = await _getToken();
     String currentLanguage = Get.locale?.languageCode ?? 'vi';
     int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
 
-    for (var location2 in locations2) {
-      try {
-        final locationDetail = await fetchLocationDetail(location2.quanAnID);
-        if (locationDetail.childGetDiaDiemByMonAns
-            .any((detail) => detail.ngonNguID == targetLanguageId)) {
-          locations.add(locationDetail);
-        }
-      } catch (e) {
-        print(
-            'Error fetching location detail for quanAnID ${location2.quanAnID}: $e');
-        continue;
-      }
+    // Lấy danh sách địa điểm từ API mới
+    final locationResponse = await http.get(
+      Uri.parse(
+          '$danhSachQuanAn/GetDanhSachDiaDiemByMonAn/$dishId?ngonNguID=$targetLanguageId'),
+      headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+    );
+    final locationData = await _handleResponse(locationResponse);
+    if (!locationData['isSuccessed'] || locationData['resultObj'] == null) {
+      return [];
     }
+    List<dynamic> locationList = locationData['resultObj'];
 
-    return locations;
-  }
-
-  Future<List<LocationModel2>> fetchLocationsByDish2(int dishId) async {
-    final token = await _getToken();
-    final response = await http.get(
+    // Lấy danh sách check-in
+    final checkinResponse = await http.get(
       Uri.parse(
           'https://hochieudulichv2.huecit.com/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
-    final data = await _handleResponse(response);
-    List list = data['resultObj'];
+    final checkinData = await _handleResponse(checkinResponse);
+    if (!checkinData['isSuccessed'] || checkinData['resultObj'] == null) {
+      return locationList
+          .map((e) => LocationModel.fromJson({'resultObj': e}))
+          .toList();
+    }
+    List<dynamic> checkinList = checkinData['resultObj'];
 
-    String currentLanguage = Get.locale?.languageCode ?? 'vi';
-    int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
-    return list
-        .map((e) => LocationModel2.fromJson(e))
-        .where((location) =>
-            location.ngonNguID == targetLanguageId &&
-            location.monAnID == dishId)
-        .toList();
+    return locationList.map((locationJson) {
+      bool isCheckedIn = checkinList.any((checkin) =>
+          checkin['monAnID'] == dishId &&
+          checkin['quanAnID'] == locationJson['id'] &&
+          checkin['ngonNguID'] == targetLanguageId &&
+          (checkin['isCheckedIn'] == true ||
+              checkin['isCheckedIn'] == 1 ||
+              checkin['isCheckedIn'] == 'true'));
+      return LocationModel(
+        id: locationJson['id'],
+        anhDaiDien: locationJson['anhDaiDien'],
+        soGiayPhep: locationJson['soGiayPhep'],
+        linhVucKinhDoanhId: locationJson['linhVucKinhDoanhId'],
+        hangSao: locationJson['hangSao'] ?? 0,
+        loaiHinhId: locationJson['loaiHinhId'],
+        dienTichMatBang: locationJson['dienTichMatBang'] ?? 0,
+        soTang: locationJson['soTang'] ?? 0,
+        soNha: locationJson['soNha'],
+        phuongXaId: locationJson['phuongXaId'] ?? 0,
+        quanHuyenId: locationJson['quanHuyenId'] ?? 0,
+        tinhThanhId: locationJson['tinhThanhId'] ?? 0,
+        soDienThoai: locationJson['soDienThoai'],
+        fax: locationJson['fax'],
+        email: locationJson['email'],
+        website: locationJson['website'],
+        hoTenNguoiDaiDien: locationJson['hoTenNguoiDaiDien'],
+        thoiDiemBatDauKinhDoanh: locationJson['thoiDiemBatDauKinhDoanh'],
+        gioDongCua: locationJson['gioDongCua'] ?? '',
+        gioMoCua: locationJson['gioMoCua'] ?? '',
+        toaDoX: (locationJson['toaDoX'] as num).toDouble(),
+        toaDoY: (locationJson['toaDoY'] as num).toDouble(),
+        banKinhQuyUoc: locationJson['banKinhQuyUoc'] ?? 0,
+        ngayCVDatChuan: locationJson['ngayCVDatChuan'],
+        soCVDatChuan: locationJson['soCVDatChuan'],
+        nhaCungCapId: locationJson['nhaCungCapId'],
+        phucVu: locationJson['phucVu'],
+        maDoanhNghiep: locationJson['maDoanhNghiep'],
+        thuocHoChieu: locationJson['thuocHoChieu'] ?? false,
+        childGetDiaDiemByMonAns: [
+          LocationDetail(
+            noiDungID: 0,
+            ngonNguID: targetLanguageId,
+            tenDiaDiem: locationJson['tenDiaDiem'] ?? '',
+            duongPho: locationJson['duongPho'] ?? '',
+            ghiChu: null,
+            tenVietTat: '',
+            gioiThieu: '',
+            tenLoai: '',
+            moTa: '',
+          ),
+        ],
+        chuongTrinhID: checkinList.isNotEmpty
+            ? checkinList.first['chuongTrinhID'] as int?
+            : null,
+        monAnID: dishId,
+        ngonNguID: targetLanguageId,
+        isCheckedIn: isCheckedIn,
+      );
+    }).toList();
   }
 
   Future<DishDetailModel> fetchDishDetail(int id) async {
     final token = await _getToken();
+    String currentLanguage = Get.locale?.languageCode ?? 'vi';
+    int targetLanguageId = languageIdMap[currentLanguage] ?? 1;
+
     final response = await http.get(
-      Uri.parse('$dishBaseUrl/GetChiTietMonAn/$id'),
+      Uri.parse('$dishBaseUrl/GetChiTietMonAn/$id?ngonNguID=$targetLanguageId'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -312,11 +364,12 @@ class ProgramFoodApiService {
   }
 
   Future<List<ReviewModel2>> fetchReviewsByLocation(int diaDiemID,
-      {int pageSize = 5}) async {
+      {int ngonNguID = 1}) async {
     final token = await _getToken();
+
     final response = await http.get(
       Uri.parse(
-          '$danhSachQuanAn/GetDSReViewDiaDiemByID?diaDiemID=$diaDiemID&pageSize=$pageSize'),
+          '$danhSachQuanAn/GetDSReViewDiaDiemByID?diaDiemID=$diaDiemID&NgonNguID=$ngonNguID'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
 
