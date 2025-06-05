@@ -8,7 +8,7 @@ import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_detail_screen.dar
 class DishListScreen extends StatefulWidget {
   final int chuongTrinhID;
   final ProgramFoodController controller = Get.find<ProgramFoodController>();
-  final ProgramTime time;
+  final ProgramTime? time;
 
   DishListScreen({super.key, required this.chuongTrinhID, required this.time}) {
     controller.fetchDishesByProgram(chuongTrinhID);
@@ -103,7 +103,7 @@ class _DishListScreenState extends State<DishListScreen> {
                           _buildDateRow(),
                           const SizedBox(height: 8),
                           // Hiển thị thông báo nếu chương trình đã hết hạn
-                          if (widget.time.isExpired) ...[
+                          if (widget.time?.isExpired ?? false) ...[
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
@@ -202,7 +202,8 @@ class _DishListScreenState extends State<DishListScreen> {
                                                   ),
                                                 ),
                                               ] else if (widget
-                                                  .time.isExpired) ...[
+                                                      .time?.isExpired ??
+                                                  false) ...[
                                                 // Nếu chương trình hết hạn, hiển thị nút "Chưa check in" màu xám
                                                 Container(
                                                   padding: const EdgeInsets
@@ -313,7 +314,9 @@ class _DishListScreenState extends State<DishListScreen> {
             const Icon(Icons.circle, color: Colors.orange, size: 10),
             const SizedBox(width: 4),
             Text(
-              'Bắt đầu: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiGianThamGia)}',
+              widget.time?.thoiGianThamGia != null
+                  ? 'Bắt đầu: ${DateFormat('dd/MM/yyyy').format(widget.time!.thoiGianThamGia!)}'
+                  : 'Bắt đầu: Chưa xác định',
               style: const TextStyle(
                   fontSize: 12, fontFamily: 'Mulish', color: Colors.orange),
             ),
@@ -325,7 +328,9 @@ class _DishListScreenState extends State<DishListScreen> {
             const Icon(Icons.circle, color: Colors.green, size: 10),
             const SizedBox(width: 4),
             Text(
-              'Kết thúc: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiHanHoanThanh)}',
+              widget.time?.thoiHanHoanThanh != null
+                  ? 'Kết thúc: ${DateFormat('dd/MM/yyyy').format(widget.time!.thoiHanHoanThanh!)}'
+                  : 'Kết thúc: Chưa xác định',
               style: const TextStyle(
                   fontSize: 12, fontFamily: 'Mulish', color: Colors.green),
             ),

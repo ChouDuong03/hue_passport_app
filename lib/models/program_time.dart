@@ -1,7 +1,7 @@
 class ProgramTime {
-  final DateTime thoiGianThamGia;
-  final DateTime thoiHanHoanThanh;
-  final bool isExpired;
+  final DateTime? thoiGianThamGia;
+  final DateTime? thoiHanHoanThanh;
+  final bool? isExpired;
 
   ProgramTime({
     required this.thoiGianThamGia,

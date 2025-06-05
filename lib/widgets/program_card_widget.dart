@@ -4,6 +4,7 @@ import 'package:hue_passport_app/controller/program_food_controller.dart';
 import 'package:hue_passport_app/models/program_food_model.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 import 'package:hue_passport_app/services/program_food_api_service.dart';
+import 'package:hue_passport_app/models/program_time.dart';
 
 class ProgramCardWidget extends StatelessWidget {
   final ProgramFoodModel program;
@@ -221,13 +222,25 @@ class ProgramCardWidget extends StatelessWidget {
                   if (controller.programs.isNotEmpty) {
                     final chuongTrinhID =
                         controller.programs[currentPage].chuongTrinhID;
-                    final programTime =
-                        await apiService.fetchProgramTime(chuongTrinhID);
-                    Get.to(() => DishListScreen(
+                    try {
+                      final programTime =
+                          await apiService.fetchProgramTime(chuongTrinhID);
+                      Get.to(() => DishListScreen(
+                          chuongTrinhID: chuongTrinhID, time: programTime));
+                    } catch (e) {
+                      // Sử dụng ProgramTime mặc định nếu API thất bại
+                      final defaultProgramTime = ProgramTime(
+                        thoiGianThamGia: null,
+                        thoiHanHoanThanh: null,
+                        isExpired: false,
+                      );
+                      Get.to(() => DishListScreen(
                           chuongTrinhID: chuongTrinhID,
-                          time: programTime,
-                        ));
-                  } // Ví dụ: điều hướng đến màn hình chi tiết
+                          time: defaultProgramTime));
+                      Get.snackbar('Cảnh báo',
+                          'Không thể lấy dữ liệu thời gian, sử dụng mặc định.');
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

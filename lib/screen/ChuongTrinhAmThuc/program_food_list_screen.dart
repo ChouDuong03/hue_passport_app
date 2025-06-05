@@ -7,6 +7,7 @@ import 'package:hue_passport_app/services/program_food_api_service.dart';
 import 'package:hue_passport_app/widgets/program_card_widget.dart';
 import 'package:hue_passport_app/screen/ChuongTrinhAmThuc/dish_list_screen.dart';
 import 'package:hue_passport_app/widgets/ranking_item_widget.dart'; // Add this import
+import 'package:hue_passport_app/models/program_time.dart';
 
 class ProgramListScreen extends StatelessWidget {
   final controller = Get.put(ProgramFoodController());
@@ -249,18 +250,22 @@ class ProgramListScreen extends StatelessWidget {
                       final chuongTrinhID =
                           controller.programs[currentIndex].chuongTrinhID;
                       try {
-                        // Gọi API fetchProgramTime từ ProgramFoodApiService
                         final programTime =
                             await apiService.fetchProgramTime(chuongTrinhID);
-                        // Điều hướng đến DishListScreen với chuongTrinhID và time
                         Get.to(() => DishListScreen(
-                              chuongTrinhID: chuongTrinhID,
-                              time: programTime,
-                            ));
+                            chuongTrinhID: chuongTrinhID, time: programTime));
                       } catch (e) {
-                        // Xử lý lỗi khi gọi API thất bại
-                        Get.snackbar(
-                            'Lỗi', 'Không thể lấy dữ liệu thời gian: $e');
+                        // Sử dụng ProgramTime mặc định nếu API thất bại
+                        final defaultProgramTime = ProgramTime(
+                          thoiGianThamGia: null,
+                          thoiHanHoanThanh: null,
+                          isExpired: false,
+                        );
+                        Get.to(() => DishListScreen(
+                            chuongTrinhID: chuongTrinhID,
+                            time: defaultProgramTime));
+                        Get.snackbar('Cảnh báo',
+                            'Không thể lấy dữ liệu thời gian, sử dụng mặc định.');
                       }
                     }
                   },

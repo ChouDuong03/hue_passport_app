@@ -119,7 +119,7 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
               Colors.green,
               Icons.check_circle,
             ),
-          if (widget.time.isExpired)
+          if (widget.time.isExpired!)
             _buildStatusMessage(
               'Chương trình đã quá hạn',
               Colors.red,
@@ -139,7 +139,7 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
             const Icon(Icons.circle, color: Colors.orange, size: 10),
             const SizedBox(width: 4),
             Text(
-              'Bắt đầu: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiGianThamGia)}',
+              'Bắt đầu: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiGianThamGia!)}',
               style: const TextStyle(
                   fontSize: 12, fontFamily: 'Mulish', color: Colors.orange),
             ),
@@ -151,7 +151,7 @@ class _ProgramProgressCardState extends State<ProgramProgressCard> {
             const Icon(Icons.circle, color: Colors.green, size: 10),
             const SizedBox(width: 4),
             Text(
-              'Kết thúc: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiHanHoanThanh)}',
+              'Kết thúc: ${DateFormat('dd/MM/yyyy').format(widget.time.thoiHanHoanThanh!)}',
               style: const TextStyle(
                   fontSize: 12, fontFamily: 'Mulish', color: Colors.green),
             ),
