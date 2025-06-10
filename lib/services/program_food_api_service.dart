@@ -19,15 +19,11 @@ import 'package:hue_passport_app/models/user_info_model.dart';
 import 'package:get/get.dart';
 
 class ProgramFoodApiService {
-  static const baseUrl =
-      'https://hochieudulichv2.huecit.com/api/ChuongTrinhAmThucs';
-  static const dishBaseUrl = 'https://hochieudulichv2.huecit.com/api/MonAns';
-  static const thongKeBaseUrl =
-      'https://hochieudulichv2.huecit.com/api/ThongKes';
-  static const danhSachQuanAn =
-      'https://hochieudulichv2.huecit.com/api/DiaDiemMonAns';
-  static const nhanQuaBaseUrl =
-      'https://hochieudulichv2.huecit.com/api/ho-chieu-hanh-khach/NhanQua';
+  static const baseUrl = 'hochieu/api/ChuongTrinhAmThucs';
+  static const dishBaseUrl = 'hochieu/api/MonAns';
+  static const thongKeBaseUrl = 'hochieu/api/ThongKes';
+  static const danhSachQuanAn = 'hochieu/api/DiaDiemMonAns';
+  static const nhanQuaBaseUrl = 'hochieu/api/ho-chieu-hanh-khach/NhanQua';
 
   static const Map<String, int> languageIdMap = {
     'vi': 1, // Tiếng Việt
@@ -99,8 +95,7 @@ class ProgramFoodApiService {
 
     // Lấy danh sách check-in để xác định trạng thái isCheckedIn
     final checkinResponse = await http.get(
-      Uri.parse(
-          'https://hochieudulichv2.huecit.com/api/Accounts/get-lichsu-checkin'),
+      Uri.parse('hochieu/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final checkinData = await _handleResponse(checkinResponse);
@@ -184,8 +179,7 @@ class ProgramFoodApiService {
 
     // Lấy danh sách check-in
     final checkinResponse = await http.get(
-      Uri.parse(
-          'https://hochieudulichv2.huecit.com/api/Accounts/get-lichsu-checkin'),
+      Uri.parse('hochieu/api/Accounts/get-lichsu-checkin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final checkinData = await _handleResponse(checkinResponse);
@@ -283,8 +277,7 @@ class ProgramFoodApiService {
   Future<int> fetchCheckInFoodCount() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse(
-          'https://hochieudulichv2.huecit.com/api/MonAns/DemSoMonAnCheckin'),
+      Uri.parse('hochieu/api/MonAns/DemSoMonAnCheckin'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
     final data = await _handleResponse(response);
@@ -317,7 +310,7 @@ class ProgramFoodApiService {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse(
-          'https://hochieudulichv2.huecit.com/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
+          'hochieu/api/ho-chieu-hanh-khach/NhanQua/cl-XacNhan?chuongTrinhID=$chuongTrinhID'),
       headers: token != null ? {'Authorization': 'Bearer $token'} : {},
     );
 
@@ -404,7 +397,7 @@ class ProgramFoodApiService {
 
   Future<UserInfoModel> getUserInfo() async {
     final token = await _getToken();
-    final url = Uri.parse('https://hochieudulichv2.huecit.com/API/UserInfo');
+    final url = Uri.parse('hochieu/API/UserInfo');
     final response = await http.post(
       url,
       headers: {
@@ -431,8 +424,7 @@ class ProgramFoodApiService {
     required int tinhThanh,
   }) async {
     final token = await _getToken();
-    final url = Uri.parse(
-        'https://hochieudulichv2.huecit.com/API/User/ChinhSua-TinhThanh');
+    final url = Uri.parse('hochieu/API/User/ChinhSua-TinhThanh');
     final response = await http.post(
       url,
       headers: {
@@ -458,7 +450,7 @@ class ProgramFoodApiService {
       {int ngonNguID = 1}) async {
     final token = await _getToken();
     final url = Uri.parse(
-      'https://hochieudulichv2.huecit.com/api/ThamGiaChuongTrinhMonAns/GetRankByChuongTrinhID?ngonNguID=$ngonNguID&chuongTrinhID=$chuongTrinhID',
+      'hochieu/api/ThamGiaChuongTrinhMonAns/GetRankByChuongTrinhID?ngonNguID=$ngonNguID&chuongTrinhID=$chuongTrinhID',
     );
 
     try {

@@ -21,8 +21,7 @@ class ApiCheckinFoodService {
     required double viDo,
     required double kinhDo,
   }) async {
-    const String apiUrl =
-        "https://hochieudulichv2.huecit.com/api/DiaDiemMonAns/CheckIn";
+    const String apiUrl = "hochieu/api/DiaDiemMonAns/CheckIn";
     final token = await _getToken();
 
     try {

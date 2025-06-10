@@ -170,7 +170,7 @@ class _DishListScreenState extends State<DishListScreen> {
                                           backgroundImage: dish
                                                   .anhDaiDien.isNotEmpty
                                               ? NetworkImage(
-                                                  'https://hochieudulichv2.huecit.com${dish.anhDaiDien}')
+                                                  'hochieu${dish.anhDaiDien}')
                                               : const AssetImage(
                                                       'assets/images/banhbeo.png')
                                                   as ImageProvider,

@@ -5,7 +5,7 @@ import 'package:hue_passport_app/controller/program_food_controller.dart';
 class ProgramDetailScreen extends StatelessWidget {
   final int programId;
   final controller = Get.find<ProgramFoodController>();
-  final baseUrl = "https://hochieudulichv2.huecit.com";
+  final baseUrl = "hochieu";
   ProgramDetailScreen({required this.programId}) {
     // Kiểm tra nếu chương trình chi tiết đã có trong cache rồi mới gọi API
     if (!controller.programDetailsCache.containsKey(programId)) {
